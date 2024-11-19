@@ -1,12 +1,19 @@
 
 #include "ArenaCamera.h"
 
+#include <direct.h> // _getcwd
+#include <stdlib.h> // free, perror
+#include <stdio.h>  // printf
+#include <string.h> // strlen
+#include <io.h> // strlen
+#include <string> // strlen
+
 #define TAB "  "
 
 
 ArenaCameraObj::ArenaCameraObj()
 {
-	isInitialized = false;
+	_isInitialized = false;
 	Initialize();
 }
 
@@ -16,54 +23,127 @@ ArenaCameraObj::~ArenaCameraObj()
 
 void ArenaCameraObj::Initialize()
 {
-	if (isInitialized)
+	if (_isInitialized)
 		return;
 
 	try
 	{
-		pSystem = Arena::OpenSystem();
+		_pSystem = Arena::OpenSystem();
 
-		pSystem->UpdateDevices(100);
+		_pSystem->UpdateDevices(100);
 		//更新設備
 
-		deviceInfos = pSystem->GetDevices();
+		_deviceInfos = _pSystem->GetDevices();
+		_deviceObj.clear();
+        _IsStreamStart.clear();
 
-		deviceObj.clear();
-
-		for (int u = 0; u < deviceInfos.size(); u++)
+		for (int u = 0; u < _deviceInfos.size(); u++)
 		{
-			Arena::IDevice* pDevice = pSystem->CreateDevice(deviceInfos[u]);
-			deviceObj.push_back(pDevice);
+            _SelectIndx = u;
+			Arena::IDevice* pDevice = _pSystem->CreateDevice(_deviceInfos[u]);
+			_deviceObj.push_back(pDevice);
+            _IsStreamStart.push_back(false);
 
 			std::cout << "\n" << TAB << "Detected device :" << " (" << u << ") "
-				<< deviceInfos[u].ModelName() << "\n";
+				<< _deviceInfos[u].ModelName()<<" Serial Number :"<< _deviceInfos[u].SerialNumber() << "\n";
+
+            _LoadConfig(pDevice, _deviceInfos[u]);
+
 		}
+
 	}
 	catch (exception ex)
 	{
 		std::cout << "\n" << TAB << "Error :" << ex.what()<< "\n";
 		throw ex;
 	}
-	isInitialized = true;
+	_isInitialized = true;
 }
 
 std::vector<Arena::DeviceInfo> ArenaCameraObj::DeviceInfos()
 {
-	return deviceInfos;
+	return _deviceInfos;
 }
 
-void ArenaCameraObj::Grab(int cameraId, uint8_t* ImgPtr)
+void ArenaCameraObj::Grab(int cameraId, unsigned int*& imgPtr)
 {
+    _SelectIndx = cameraId;
+    Grab(imgPtr);
+
 
 }
 
-void ArenaCameraObj::Grab(uint8_t* ImgPtr)
+void ArenaCameraObj::Grab(unsigned int*& imgPtr)
 {
 	//-----設定觸發模式
     string Value;
 
-	Arena::IDevice* pDevice = deviceObj[_SelectIndx];
+	Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
+    auto t_start = std::chrono::high_resolution_clock::now();
+
+    pDevice->StartStream();
+    Excute("AcquisitionStart");
+
+    bool triggerArmed = false;
+
+    do
+    {triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");} 
+    while (triggerArmed == false);
+
+    Excute("TriggerSoftware");
+
+    _GetImgPtr(pDevice,imgPtr);
+
+
+    Excute("AcquisitionStop");
+    pDevice->StopStream();
+
+    auto t_end = std::chrono::high_resolution_clock::now();
+    double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
+
+    cout << "取像花費時間: "<< elapsed_time_ms <<" ms" << endl;
+    //----目前平均花費時間 500ms 理論上這段程式碼可以優化
+}
+
+void ArenaCameraObj::Close()
+{
+    for (int u = 0; u < _deviceInfos.size(); u++)
+    {
+        _SelectIndx = u;
+        SetCameraParam("PixelFormat", "BayerRGB8");//<---不宜在這邊進行設定 很容易出問題
+        SetCameraParam("AcquisitionMode", "Continuous");
+        SetCameraParam("AcquisitionStartMode", "Normal");
+        SetCameraParam("TriggerSelector", "AcquisitionStart");
+        SetCameraParam("TriggerMode", "Off");
+        SetCameraParam("TriggerSource", "Software");
+
+        _pSystem->DestroyDevice(_deviceObj[u]);
+    }
+
+    Arena::CloseSystem(_pSystem);
+    _deviceObj.clear();
+
+}
+
+void ArenaCameraObj::ConsolePrintDeviceInfo()
+{
+	std::cout << "\n" << TAB << "Current Devices " << "\n";
+
+
+	for (int u = 0; u < _deviceInfos.size(); u++)
+	{
+		std::cout << "\n" << TAB  << " (" << u << ") "
+			<< _deviceInfos[u].ModelName() << "\n";
+	}
+}
+
+void ArenaCameraObj::SelectCameraId(int cameraId)
+{
+    Arena::IDevice* pDevice;
+
+	_SelectIndx = cameraId;
+    pDevice = _deviceObj[_SelectIndx];
 
     SetCameraParam("PixelFormat", "BGR8");
     SetCameraParam("AcquisitionMode", "SingleFrame");
@@ -72,170 +152,11 @@ void ArenaCameraObj::Grab(uint8_t* ImgPtr)
     SetCameraParam("TriggerMode", "On");
     SetCameraParam("TriggerSource", "Software");
 
-    std::cout << TAB << "Start stream\n";
-    pDevice->StartStream();
-
-    Excute("AcquisitionStart");
-
-    bool triggerArmed = false;
-
-    do
-    {
-        triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");
-    } while (triggerArmed == false);
-
-
-    Excute("TriggerSoftware");
-
-    Mat img=GetCvImg(pDevice);
-    Mat img2;
-    resize(img, img2,Size(532,460));
-
-    imshow("debug", img2);
-    cv::waitKey(0);
-    std::cout << TAB << "Stop stream\n";
-
-    Arena::ExecuteNode(
-        pDevice->GetNodeMap(),
-        "AcquisitionStop");
-
-
-    pDevice->StopStream();
-
-
-
-}
-
-void ArenaCameraObj::Close()
-{
-}
-
-void ArenaCameraObj::ConsolePrintDeviceInfo()
-{
-	std::cout << "\n" << TAB << "Current Devices " << "\n";
-
-
-	for (int u = 0; u < deviceInfos.size(); u++)
-	{
-		std::cout << "\n" << TAB  << " (" << u << ") "
-			<< deviceInfos[u].ModelName() << "\n";
-	}
-}
-
-void ArenaCameraObj::SelectCameraId(int cameraId)
-{
-	_SelectIndx = cameraId;
-}
-
-void ArenaCameraObj::ConfigureTriggerAndAcquireImage(Arena::IDevice* pDevice)
-{
-    // get node values that will be changed in order to return their values at
-    // the end of the example
-    GenICam::gcstring triggerModeInitial = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "TriggerMode");
-    GenICam::gcstring triggerSourceInitial = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "TriggerSource");
-
-    // Set trigger selector
-    //    Set the trigger selector to FrameStart. When triggered, the device will
-    //    start acquiring a single frame. This can also be set to
-    //    AcquisitionStart or FrameBurstStart.
-    std::cout << TAB << "Set trigger selector to FrameStart\n";
-
-    Arena::SetNodeValue<GenICam::gcstring>(
-        pDevice->GetNodeMap(),
-        "TriggerSelector",
-        "AcquisitionStart");
-
-    // Set trigger mode
-    //    Enable trigger mode before setting the source and selector and before
-    //    starting the stream. Trigger mode cannot be turned on and off while the
-    //    device is streaming.
-    std::cout << TAB << "Enable trigger mode\n";
-
-    Arena::SetNodeValue<GenICam::gcstring>(
-        pDevice->GetNodeMap(),
-        "TriggerMode",
-        "On");
-
-    // Set trigger source
-    //    Set the trigger source to software in order to trigger images without
-    //    the use of any additional hardware. Lines of the GPIO can also be used
-    //    to trigger.
-    std::cout << TAB << "Set trigger source to Software\n";
-
-    Arena::SetNodeValue<GenICam::gcstring>(
-        pDevice->GetNodeMap(),
-        "TriggerSource",
-        "Software");
-
-    // enable stream auto negotiate packet size
-    Arena::SetNodeValue<bool>(
-        pDevice->GetTLStreamNodeMap(),
-        "StreamAutoNegotiatePacketSize",
-        true);
-
-    // enable stream packet resend
-    Arena::SetNodeValue<bool>(
-        pDevice->GetTLStreamNodeMap(),
-        "StreamPacketResendEnable",
-        true);
-
-    // Start stream
-    //    When trigger mode is off and the acquisition mode is set to stream
-    //    continuously, starting the stream will have the camera begin acquiring
-    //    a steady stream of images. However, with trigger mode enabled, the
-    //    device will wait for the trigger before acquiring any.
-    std::cout << TAB << "Start stream\n";
-
-    pDevice->StartStream();
-
-    // Trigger Armed
-    //    Continually check until trigger is armed. Once the trigger is armed, it
-    //    is ready to be executed.
-    std::cout << TAB << "Wait until trigger is armed\n";
-    bool triggerArmed = false;
-
-    do
-    {
-        triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");
-    } while (triggerArmed == false);
-
-    // Trigger an image
-    //    Trigger an image manually, since trigger mode is enabled. This triggers
-    //    the camera to acquire a single image. A buffer is then filled and moved
-    //    to the output queue, where it will wait to be retrieved.
-    std::cout << TAB<< "Trigger image\n";
-
-    Arena::ExecuteNode(
-        pDevice->GetNodeMap(),
-        "TriggerSoftware");
-
-    // Get image
-    //    Once an image has been triggered, it can be retrieved. If no image has
-    //    been triggered, trying to retrieve an image will hang for the duration
-    //    of the timeout and then throw an exception.
-    std::cout << TAB << "Get image";
-
-    Arena::IImage* pImage = pDevice->GetImage(100);
-
-
-    // requeue buffer
-    std::cout << TAB << "Requeue buffer\n";
-
-    pDevice->RequeueBuffer(pImage);
-
-    // Stop the stream
-    std::cout << TAB << "Stop stream\n";
-
-    pDevice->StopStream();
-
-    // return nodes to their initial values
-    Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "TriggerSource", triggerSourceInitial);
-    Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "TriggerMode", triggerModeInitial);
 }
 
 void ArenaCameraObj::SetCameraParam(string NodeName, string Value)
 {
-    Arena::IDevice* pDevice = deviceObj[_SelectIndx];
+    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
     string outputVal;
     GetCameraParam(NodeName, outputVal);
@@ -250,7 +171,7 @@ void ArenaCameraObj::SetCameraParam(string NodeName, string Value)
 
 void ArenaCameraObj::GetCameraParam(string NodeName, string &Value)
 {
-    Arena::IDevice* pDevice = deviceObj[_SelectIndx];
+    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
     const char* cNodeName = NodeName.c_str();
     GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), cNodeName);
@@ -271,7 +192,7 @@ void ArenaCameraObj::GetCameraParam(int cameraId, string NodeName, string& Value
 
 void ArenaCameraObj::Excute(string ExcuteCmd)
 {
-    Arena::IDevice* pDevice = deviceObj[_SelectIndx];
+    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
     const char* cExcuteCmd = ExcuteCmd.c_str();
 
@@ -280,12 +201,93 @@ void ArenaCameraObj::Excute(string ExcuteCmd)
         cExcuteCmd);
 }
 
+void ArenaCameraObj::_GetImgPtr(Arena::IDevice* pDevice, unsigned int*& imgPtr)
+{
+
+    Arena::IImage* image = pDevice->GetImage(2000);
+
+    std::cout << "\n" << TAB << "image->GetFrameId: " << image->GetFrameId() << "\n";
+
+    unsigned int retry_count = 0;
+    const unsigned int retry_count_max = 100;
+    while (image->IsIncomplete())
+    {
+        retry_count++;
+        pDevice->RequeueBuffer(image);
+        image = pDevice->GetImage(2000);
+        if (retry_count > retry_count_max)
+        {
+            return;
+        }
+    }
+
+    uint64_t pixel_format = image->GetPixelFormat();
+    size_t height = image->GetHeight();
+    size_t width = image->GetWidth();
+    size_t bits_per_pixel = image->GetBitsPerPixel();
+
+    int format = CV_8UC1;
+
+    if (bits_per_pixel == 8)
+        format = CV_8UC1;
+    else
+        format = CV_8UC3;
+
+    size_t bytes_per_pixel = bits_per_pixel / 8;
+    size_t image_data_size_bytes = width * height * bytes_per_pixel;
+
+    imgPtr = (unsigned int *)malloc(width * height * 8 * 4);
+
+    memcpy(imgPtr, image->GetData(), image_data_size_bytes);
+
+    return;
+}
+
+void ArenaCameraObj::_LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info)
+{
+    //----需要讀取對應文檔進行設定 因為每台相機的功能不一樣 不可以統一設定 這樣會死人的     
+    string strPath;
+    char* buffer;
+
+    // Get the current working directory:
+    if ((buffer = _getcwd(NULL, 0)) != NULL)
+    {
+
+        strPath.assign(buffer, strlen(buffer));
+        free(buffer);
+    }
+
+    strPath = strPath + "\\config\\";
+
+    if (_access(strPath.c_str(), 0) == -1)
+        _mkdir(strPath.c_str());
+
+
+
+    strPath = strPath +string(info.ModelName())+string(info.SerialNumber())+".txt";
+
+    if ((_access(strPath.c_str(), 0)) != -1) 
+    {
+        //---檔案存在 讀取檔案
+
+    }
+    else
+    {
+        //---檔案不存在 建立檔案 並將目前的參數寫入檔案
+
+    }
+
+}
+
 Mat GetCvImg(Arena::IDevice* pDevice)
 {
         Arena::IImage* image = pDevice->GetImage(2000);
-    
+        
+        std::cout << "\n" << TAB << "image->GetFrameId: "<< image->GetFrameId() << "\n";
+
+
         unsigned int retry_count = 0;
-        const unsigned int retry_count_max = 50;
+        const unsigned int retry_count_max = 100;
         while (image->IsIncomplete())
         {
             retry_count++;

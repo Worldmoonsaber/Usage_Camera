@@ -8,6 +8,14 @@
 #include "conio.h"
 #include "ArenaCamera.h"
 
+#include <direct.h> // _getcwd
+#include <stdlib.h> // free, perror
+#include <stdio.h>  // printf
+#include <string.h> // strlen
+#include <io.h> // strlen
+#include <string> // strlen
+
+
 using std::cout;
 using namespace std;
 using namespace Arena;
@@ -15,12 +23,22 @@ using namespace cv;
 #define TAB "  "
 
 
+static void thread_WorkContent(void* ptr)
+{
+	Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
+
+	resize(image_input, image_input, Size(532, 460));
+
+	imshow("debug", image_input);
+}
+
 
 
 ArenaCameraObj* obj;
 
 int main()//int argc, char** argv
 {
+
 	obj = new ArenaCameraObj();
 	obj->Initialize();
 
@@ -74,85 +92,19 @@ int main()//int argc, char** argv
 		}
 		else 
 		{
-			uint8_t* ptr=nullptr;
+			unsigned int* ptr=nullptr;
 			obj->Grab(ptr);
+
+			//thread thr= thread(thread_WorkContent,&ptr);
+
+			//Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
+
+			//resize(image_input, image_input, Size(532, 460));
+
+			//imshow("debug", image_input);
+			//cv:waitKey(0);
 		}
 	}
-	//int n;
-	//char c;
-	//cout << "Press any key:\n";
-	//_getch();
-	//cout << "You pressed a key.\n";
-	//cout << "Press another key:\n";
-	//c = _getch();
-	//cout << "You pressed " << c << "\n";
-	//cout << "Press another key again:\n";
-	//n = _getch();
-	//cout << "You pressed " << n << "\n";    //ASCII
-
-	//bool exceptionThrown = false;
-
-	//std::cout << "Cpp_ShadingCorrection\n";
-
-	///*try
-	//{*/
-
-	//Arena::ISystem* pSystem = Arena::OpenSystem();
-
-	//pSystem->UpdateDevices(100);
-	////更新設備
-	//std::vector<Arena::DeviceInfo> deviceInfos = pSystem->GetDevices();
-
-	///*選取設備
-	// std::cout << "\n"
-	//		   << TAB1 << "Only one device detected: "
-	//		   << deviceInfos[0].ModelName() << TAB1
-	//		   << deviceInfos[0].SerialNumber() << TAB1
-	//		   << deviceInfos[0].IpAddressStr() << ".\n";
-	//*/
-
-	//std::cout << "\n" << "Start to list cam: " << endl;
-
-	//for (int i = 0; i < deviceInfos.size(); i++)
-	//{
-	//	std::cout << "\n" << TAB1 << "Detected device :" << " (" << i << ") "
-	//		<< deviceInfos[i].ModelName() << "\n";
-	//}
-	//bool valid = false;
-	//int  camindex = 0;
-
-
-
-
-
-	//std::cout << "Cpp_ShadingCorrection\n";
-
-	///*try
-	//{*/
-
-	//Arena::ISystem* pSystem = Arena::OpenSystem();
-
-	//pSystem->UpdateDevices(100);
-	////更新設備
-	//std::vector<Arena::DeviceInfo> deviceInfos = pSystem->GetDevices();
-
-	///*選取設備
-	// std::cout << "\n"
-	//		   << TAB1 << "Only one device detected: "
-	//		   << deviceInfos[0].ModelName() << TAB1
-	//		   << deviceInfos[0].SerialNumber() << TAB1
-	//		   << deviceInfos[0].IpAddressStr() << ".\n";
-	//*/
-
-	//std::cout << "\n" << "Start to list cam: " << endl;
-
-	//for (int i = 0; i < deviceInfos.size(); i++)
-	//{
-	//	std::cout << "\n" << TAB1 << "Detected device :" << " (" << i << ") "
-	//		<< deviceInfos[i].ModelName() << "\n";
-	//}
-	//bool valid = false;
-	//int  camindex = 0;
 
 	return 0;
 }

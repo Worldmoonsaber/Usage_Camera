@@ -27,12 +27,11 @@ public:
 	void Initialize();
 	std::vector<Arena::DeviceInfo> DeviceInfos();
 
-	void Grab(int cameraId,uint8_t* ImgPtr);
-	void Grab(uint8_t* ImgPtr);
+	void Grab(int cameraId, unsigned int*& imgPtr);
+	void Grab(unsigned int*& imgPtr);
 	void SelectCameraId(int cameraId);
 	void Close();
 	void ConsolePrintDeviceInfo();
-	void ConfigureTriggerAndAcquireImage(Arena::IDevice* pDevice);
 
 	void SetCameraParam(string NodeName, string Value);
 	void GetCameraParam(string NodeName, string &Value);
@@ -40,12 +39,19 @@ public:
 	void SetCameraParam(int cameraId,string NodeName, string Value);
 	void GetCameraParam(int cameraId,string NodeName, string& Value);
 	void Excute(string ExcuteCmd);
+
 private:
-	Arena::ISystem* pSystem;
-	std::vector<Arena::DeviceInfo> deviceInfos;
-	std::vector<Arena::IDevice*> deviceObj;
-	bool isInitialized = false;
+	void _GetImgPtr(Arena::IDevice* pDevice, unsigned int*& imgPtr);
+	Arena::ISystem* _pSystem;
+	std::vector<Arena::DeviceInfo> _deviceInfos;
+	std::vector<Arena::IDevice*> _deviceObj;
+	std::vector<bool> _IsStreamStart;
+
+	bool _isInitialized = false;
 	int _SelectIndx = -1;
+
+	void _LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info);
+	//----ConfigºÞ²z
 };
 
 

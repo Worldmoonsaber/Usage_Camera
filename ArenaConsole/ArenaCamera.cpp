@@ -75,35 +75,43 @@ void ArenaCameraObj::Grab(int cameraId, unsigned int*& imgPtr)
 
 void ArenaCameraObj::Grab(unsigned int*& imgPtr)
 {
-	//-----設定觸發模式
-    string Value;
+    try
+    {
+        //-----設定觸發模式
+        string Value;
 
-	Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+        Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
-    auto t_start = std::chrono::high_resolution_clock::now();
+        auto t_start = std::chrono::high_resolution_clock::now();
 
-    pDevice->StartStream();
-    Excute("AcquisitionStart");
+        pDevice->StartStream();
+        Excute("AcquisitionStart");
 
-    bool triggerArmed = false;
+        bool triggerArmed = false;
 
-    do
-    {triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");} 
-    while (triggerArmed == false);
+        do
+        {
+            triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");
+        } while (triggerArmed == false);
 
-    Excute("TriggerSoftware");
+        Excute("TriggerSoftware");
 
-    _GetImgPtr(pDevice,imgPtr);
+        _GetImgPtr(pDevice, imgPtr);
 
 
-    Excute("AcquisitionStop");
-    pDevice->StopStream();
+        Excute("AcquisitionStop");
+        pDevice->StopStream();
 
-    auto t_end = std::chrono::high_resolution_clock::now();
-    double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
+        auto t_end = std::chrono::high_resolution_clock::now();
+        double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
 
-    cout << "取像花費時間: "<< elapsed_time_ms <<" ms" << endl;
-    //----目前平均花費時間 500ms 理論上這段程式碼可以優化
+        cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
+        //----目前平均花費時間 500ms 理論上這段程式碼可以優化
+    }
+    catch (exception ex)
+    {
+        cout << ex.what() << endl;
+    }
 }
 
 void ArenaCameraObj::Close()
@@ -156,26 +164,39 @@ void ArenaCameraObj::SelectCameraId(int cameraId)
 
 void ArenaCameraObj::SetCameraParam(string NodeName, string Value)
 {
-    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
-
-    string outputVal;
-    GetCameraParam(NodeName, outputVal);
-
-    if (Value != outputVal)
+    try
     {
-        const char* cNodeName = NodeName.c_str();
-        const char* cValue = Value.c_str();
-        Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), cNodeName, cValue);
+        Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+
+        string outputVal;
+        GetCameraParam(NodeName, outputVal);
+
+        if (Value != outputVal)
+        {
+            const char* cNodeName = NodeName.c_str();
+            const char* cValue = Value.c_str();
+            Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), cNodeName, cValue);
+        }
+    }
+    catch(Exception ex)
+    {
+        cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
     }
 }
 
 void ArenaCameraObj::GetCameraParam(string NodeName, string &Value)
 {
-    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
-
-    const char* cNodeName = NodeName.c_str();
-    GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), cNodeName);
-    Value = string(value);
+    try
+    {
+        Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+        const char* cNodeName = NodeName.c_str();
+        GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), cNodeName);
+        Value = string(value);
+    }
+    catch (Exception ex)
+    {
+        cout << "NodeName: " + NodeName+" Value :" + Value +" " + ex.what() << endl;
+    }
 }
 
 void ArenaCameraObj::SetCameraParam(int cameraId, string NodeName, string Value)
@@ -192,13 +213,19 @@ void ArenaCameraObj::GetCameraParam(int cameraId, string NodeName, string& Value
 
 void ArenaCameraObj::Excute(string ExcuteCmd)
 {
-    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+    try
+    {
+        Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
 
-    const char* cExcuteCmd = ExcuteCmd.c_str();
+        const char* cExcuteCmd = ExcuteCmd.c_str();
 
-    Arena::ExecuteNode(
-        pDevice->GetNodeMap(),
-        cExcuteCmd);
+        Arena::ExecuteNode(pDevice->GetNodeMap(),cExcuteCmd);
+    }
+    catch (Exception ex)
+    {
+        cout << "ExcuteCmd: "+ ExcuteCmd+" " + ex.what() << endl;
+    }
+
 }
 
 void ArenaCameraObj::_GetImgPtr(Arena::IDevice* pDevice, unsigned int*& imgPtr)
@@ -262,14 +289,24 @@ void ArenaCameraObj::_LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info
     if (_access(strPath.c_str(), 0) == -1)
         _mkdir(strPath.c_str());
 
-
-
     strPath = strPath +string(info.ModelName())+string(info.SerialNumber())+".txt";
 
     if ((_access(strPath.c_str(), 0)) != -1) 
     {
         //---檔案存在 讀取檔案
+                //---檔案存在 讀取檔案
+        fstream read_file;
+        read_file.open(strPath, ios::in);
 
+        string data;
+        while (std::getline(read_file, data))
+        {
+            cout << data << '\n';
+            vector<std::string> vStr = split(data, ":");
+            SetCameraParam(vStr[0], vStr[1]);
+        }
+
+        read_file.close();
     }
     else
     {
@@ -369,4 +406,27 @@ Mat Unpack12BitImage(Arena::IImage* image)
     }
 
     return image16_bit;
+}
+
+
+
+std::vector<std::string> ArenaCameraObj::split(const std::string& str, const std::string& pattern) {
+    std::vector<std::string> result;
+    std::string::size_type begin, end;
+
+    end = str.find(pattern);
+    begin = 0;
+
+    while (end != std::string::npos) {
+        if (end - begin != 0) {
+            result.push_back(str.substr(begin, end - begin));
+        }
+        begin = end + pattern.size();
+        end = str.find(pattern, begin);
+    }
+
+    if (begin != str.length()) {
+        result.push_back(str.substr(begin));
+    }
+    return result;
 }

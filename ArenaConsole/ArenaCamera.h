@@ -8,7 +8,8 @@
 #include<opencv2/imgproc/imgproc.hpp> //mophorlogical operation
 #include<opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
-
+#include<fstream>
+#include<cstring>
 using namespace std;
 using namespace cv;
 
@@ -49,7 +50,7 @@ private:
 
 	bool _isInitialized = false;
 	int _SelectIndx = -1;
-
+	std::vector<std::string> split(const std::string& str, const std::string& pattern);
 	void _LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info);
 	//----ConfigºÞ²z
 };

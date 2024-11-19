@@ -15,6 +15,8 @@
 #include <io.h> // strlen
 #include <string> // strlen
 
+#include<fstream>
+#include<cstring>
 
 using std::cout;
 using namespace std;
@@ -33,12 +35,10 @@ static void thread_WorkContent(void* ptr)
 }
 
 
-
 ArenaCameraObj* obj;
 
 int main()//int argc, char** argv
 {
-
 	obj = new ArenaCameraObj();
 	obj->Initialize();
 

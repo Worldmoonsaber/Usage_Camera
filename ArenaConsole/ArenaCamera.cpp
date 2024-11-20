@@ -51,6 +51,7 @@ void ArenaCameraObj::Initialize()
 
 		}
 
+        _SelectIndx = -1;
 	}
 	catch (exception ex)
 	{
@@ -84,23 +85,18 @@ void ArenaCameraObj::Grab(unsigned int*& imgPtr)
 
         auto t_start = std::chrono::high_resolution_clock::now();
 
-        pDevice->StartStream();
-        Excute("AcquisitionStart");
-
         bool triggerArmed = false;
 
-        do
-        {
-            triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");
-        } while (triggerArmed == false);
-
-        Excute("TriggerSoftware");
+        //do
+        //{
+        //    triggerArmed = Arena::GetNodeValue<bool>(pDevice->GetNodeMap(), "TriggerArmed");
+        //} while (triggerArmed == false);
 
         _GetImgPtr(pDevice, imgPtr);
 
 
-        Excute("AcquisitionStop");
-        pDevice->StopStream();
+        //Excute("AcquisitionStop");
+        //pDevice->StopStream();
 
         auto t_end = std::chrono::high_resolution_clock::now();
         double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
@@ -111,6 +107,28 @@ void ArenaCameraObj::Grab(unsigned int*& imgPtr)
     catch (exception ex)
     {
         cout << ex.what() << endl;
+        //Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+
+        //Excute("AcquisitionStop");
+        //_deviceObj[_SelectIndx]->StopStream();
+        //_IsStreamStart[_SelectIndx] = false;
+        //pDevice->StartStream(BufferSize);
+        //Excute("AcquisitionStart");
+        ////Excute("TriggerSoftware");
+        //_IsStreamStart[_SelectIndx] = true;
+    }
+    catch (GenICam::GenericException& ge)
+    {
+        cout << ge.what() << endl;
+        //Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+
+        //Excute("AcquisitionStop");
+        //_deviceObj[_SelectIndx]->StopStream();
+        //_IsStreamStart[_SelectIndx] = false;
+        //pDevice->StartStream(BufferSize);
+        //Excute("AcquisitionStart");
+        ////Excute("TriggerSoftware");
+        //_IsStreamStart[_SelectIndx] = true;
     }
 }
 
@@ -119,18 +137,28 @@ void ArenaCameraObj::Close()
     for (int u = 0; u < _deviceInfos.size(); u++)
     {
         _SelectIndx = u;
-        SetCameraParam("PixelFormat", "BayerRGB8");//<---不宜在這邊進行設定 很容易出問題
-        SetCameraParam("AcquisitionMode", "Continuous");
-        SetCameraParam("AcquisitionStartMode", "Normal");
-        SetCameraParam("TriggerSelector", "AcquisitionStart");
-        SetCameraParam("TriggerMode", "Off");
-        SetCameraParam("TriggerSource", "Software");
+        //SetCameraParam("PixelFormat", "BayerRGB8");//<---不宜在這邊進行設定 很容易出問題
+        //SetCameraParam("AcquisitionMode", "Continuous");
+        //SetCameraParam("AcquisitionStartMode", "Normal");
+        //SetCameraParam("TriggerSelector", "AcquisitionStart");
+        //SetCameraParam("TriggerMode", "On");
+        //SetCameraParam("TriggerSource", "Software");
 
         _pSystem->DestroyDevice(_deviceObj[u]);
+
+
+        if (_IsStreamStart[_SelectIndx])
+        {
+            Excute("AcquisitionStop");
+            _deviceObj[_SelectIndx]->StopStream();
+            _IsStreamStart[_SelectIndx] = false;
+        }
+
     }
 
     Arena::CloseSystem(_pSystem);
     _deviceObj.clear();
+    _isInitialized = false;
 
 }
 
@@ -148,17 +176,35 @@ void ArenaCameraObj::ConsolePrintDeviceInfo()
 
 void ArenaCameraObj::SelectCameraId(int cameraId)
 {
+    if (_SelectIndx != -1)
+    {
+        if (_IsStreamStart[_SelectIndx])
+        {
+            Excute("AcquisitionStop");
+            _deviceObj[_SelectIndx]->StopStream();
+            _IsStreamStart[_SelectIndx] = false;
+        }
+    }
     Arena::IDevice* pDevice;
 
 	_SelectIndx = cameraId;
     pDevice = _deviceObj[_SelectIndx];
 
     SetCameraParam("PixelFormat", "BGR8");
-    SetCameraParam("AcquisitionMode", "SingleFrame");
+    SetCameraParam("AcquisitionMode", "Continuous");
+    //SetCameraParam("AcquisitionFrameCount", to_string(BufferSize));
+
     SetCameraParam("AcquisitionStartMode", "Normal");
     SetCameraParam("TriggerSelector", "AcquisitionStart");
-    SetCameraParam("TriggerMode", "On");
-    SetCameraParam("TriggerSource", "Software");
+    //SetCameraParam("TriggerMode", "Off");
+    //SetCameraParam("TriggerSource", "Software");
+    //SetCameraParam("TriggerMode", "On");
+
+    pDevice->StartStream();
+    Excute("AcquisitionStart");
+    //Excute("TriggerSoftware");
+    _IsStreamStart[_SelectIndx] = true;
+
 
 }
 
@@ -182,6 +228,10 @@ void ArenaCameraObj::SetCameraParam(string NodeName, string Value)
     {
         cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
     }
+    catch (GenICam::GenericException& ge)
+    {
+        std::cout << "\nGenICam exception thrown: " << ge.what()<< "NodeName: " + NodeName + " Value : " + Value << "\n";
+    }
 }
 
 void ArenaCameraObj::GetCameraParam(string NodeName, string &Value)
@@ -197,6 +247,11 @@ void ArenaCameraObj::GetCameraParam(string NodeName, string &Value)
     {
         cout << "NodeName: " + NodeName+" Value :" + Value +" " + ex.what() << endl;
     }
+    catch (GenICam::GenericException& ge)
+    {
+        std::cout << "\nGenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+    }
+
 }
 
 void ArenaCameraObj::SetCameraParam(int cameraId, string NodeName, string Value)
@@ -225,47 +280,80 @@ void ArenaCameraObj::Excute(string ExcuteCmd)
     {
         cout << "ExcuteCmd: "+ ExcuteCmd+" " + ex.what() << endl;
     }
-
+    catch (GenICam::GenericException& ge)
+    {
+        cout << "ExcuteCmd: " + ExcuteCmd + " " + ge.what() << endl;
+    }
 }
 
 void ArenaCameraObj::_GetImgPtr(Arena::IDevice* pDevice, unsigned int*& imgPtr)
 {
-
-    Arena::IImage* image = pDevice->GetImage(2000);
-
-    std::cout << "\n" << TAB << "image->GetFrameId: " << image->GetFrameId() << "\n";
-
-    unsigned int retry_count = 0;
-    const unsigned int retry_count_max = 100;
-    while (image->IsIncomplete())
+    try
     {
-        retry_count++;
-        pDevice->RequeueBuffer(image);
-        image = pDevice->GetImage(2000);
-        if (retry_count > retry_count_max)
+        Arena::IImage* image = pDevice->GetImage(2000);
+        int indx = image->GetFrameId();
+        std::cout << "\n" << TAB << "image->GetFrameId: " << indx << "\n";
+
+        if (image->GetFrameId() == BufferSize)
         {
-            return;
+
         }
+
+        unsigned int retry_count = 0;
+        const unsigned int retry_count_max = 100;
+        while (image->IsIncomplete())
+        {
+            retry_count++;
+            pDevice->RequeueBuffer(image);
+            image = pDevice->GetImage(2000);
+            if (retry_count > retry_count_max)
+            {
+                return;
+            }
+        }
+
+        uint64_t pixel_format = image->GetPixelFormat();
+        size_t height = image->GetHeight();
+        size_t width = image->GetWidth();
+        size_t bits_per_pixel = image->GetBitsPerPixel();
+
+        int format = CV_8UC1;
+
+        if (bits_per_pixel == 8)
+            format = CV_8UC1;
+        else
+            format = CV_8UC3;
+
+        size_t bytes_per_pixel = bits_per_pixel / 8;
+        size_t image_data_size_bytes = width * height * bytes_per_pixel;
+
+        imgPtr = (unsigned int*)malloc(width * height * 8 * 4);
+        memcpy(imgPtr, image->GetData(), image_data_size_bytes);
+
+        //image->~IImage();
+        //if(image->GetFrameId()%2==0)
+
+        pDevice->RequeueBuffer(image);
+
+        //if (indx < 100 )
+        //else
+        //{
+        //    pDevice->RequeueBuffer(image);
+        //    _ResetCamera();
+        //    //pDevice= _deviceObj[_SelectIndx];// pDevice 在被Reset後原本的指標已經被摧毀
+        //    //_GetImgPtr(pDevice, imgPtr);
+        //}
+
     }
+    catch (GenICam::GenericException& ge)
+    {
+        cout << ge.what() << endl;
+    }
+    catch (...)
+    {
 
-    uint64_t pixel_format = image->GetPixelFormat();
-    size_t height = image->GetHeight();
-    size_t width = image->GetWidth();
-    size_t bits_per_pixel = image->GetBitsPerPixel();
-
-    int format = CV_8UC1;
-
-    if (bits_per_pixel == 8)
-        format = CV_8UC1;
-    else
-        format = CV_8UC3;
-
-    size_t bytes_per_pixel = bits_per_pixel / 8;
-    size_t image_data_size_bytes = width * height * bytes_per_pixel;
-
-    imgPtr = (unsigned int *)malloc(width * height * 8 * 4);
-
-    memcpy(imgPtr, image->GetData(), image_data_size_bytes);
+        _ResetCamera();
+    }
 
     return;
 }
@@ -311,9 +399,37 @@ void ArenaCameraObj::_LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info
     else
     {
         //---檔案不存在 建立檔案 並將目前的參數寫入檔案
+        fstream write_file;
+        write_file.open(strPath, std::ios::out);
 
+        //std::vector<std::string> str;
+        //str.push_back("001:xxA\n");
+        //str.push_back("002:xxB\n");
+        //str.push_back("003:xxC\n");
+
+        //for (auto& s : str)
+        //    write_file << s;
+        
+        write_file.close();
     }
 
+}
+
+void ArenaCameraObj::_ResetCamera()
+{
+    int select = _SelectIndx;
+    Excute("AcquisitionStop");
+    _deviceObj[_SelectIndx]->StopStream();
+    _IsStreamStart[_SelectIndx] = false;
+    //_pSystem->DestroyDevice(_deviceObj[_SelectIndx]);
+    Close();
+    Initialize();
+    _SelectIndx = select;
+    Arena::IDevice* pDevice = _deviceObj[_SelectIndx];
+
+    pDevice->StartStream();
+    Excute("AcquisitionStart");
+    _IsStreamStart[_SelectIndx] = true;
 }
 
 Mat GetCvImg(Arena::IDevice* pDevice)

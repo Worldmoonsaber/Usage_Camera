@@ -3,20 +3,9 @@
 
 #include "ArenaApi.h"
 #include "SaveApi.h"
-#include<opencv2/opencv.hpp>
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp> //mophorlogical operation
-#include<opencv2/core.hpp>
-#include <opencv2/core/mat.hpp>
 #include<fstream>
 #include<cstring>
 using namespace std;
-using namespace cv;
-
-
-Mat GetCvImg(Arena::IDevice* pDevice);
-Mat Unpack12BitImage(Arena::IImage* image);
-
 
 class ArenaCameraObj
 {
@@ -41,6 +30,9 @@ public:
 	void GetCameraParam(int cameraId,string NodeName, string& Value);
 	void Excute(string ExcuteCmd);
 
+	void AcquisitionStart();
+	void AcquisitionStop();
+
 private:
 	void _GetImgPtr(Arena::IDevice* pDevice, unsigned int*& imgPtr);
 	Arena::ISystem* _pSystem;
@@ -53,6 +45,7 @@ private:
 	std::vector<std::string> split(const std::string& str, const std::string& pattern);
 	void _LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info);
 	//----ConfigºÞ²z
+	void _ResetCamera();
 };
 
 

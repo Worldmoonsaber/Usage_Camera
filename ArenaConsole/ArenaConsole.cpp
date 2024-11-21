@@ -72,6 +72,7 @@ int main()//int argc, char** argv
 		else
 		{
 			obj->SelectCameraId(selectIndex);
+			obj->AcquisitionStart();
 			break;
 		}
 	}
@@ -106,5 +107,7 @@ int main()//int argc, char** argv
 		}
 	}
 
+	obj->AcquisitionStop();
+	obj->Close();
 	return 0;
 }

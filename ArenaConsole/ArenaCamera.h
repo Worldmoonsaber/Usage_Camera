@@ -45,7 +45,6 @@ private:
 	std::vector<std::string> split(const std::string& str, const std::string& pattern);
 	void _LoadConfig(Arena::IDevice* pDevice, Arena::DeviceInfo info);
 	//----ConfigºÞ²z
-	void _ResetCamera();
 };
 
 

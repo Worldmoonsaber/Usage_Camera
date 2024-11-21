@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArenaConsole", "ArenaConsol
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArenaExampleTEST", "..\ArenaExampleTEST\ArenaExampleTEST.vcxproj", "{BE4EA341-2CEA-48E1-BA52-3E755CB17CDB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleMultiCameraManager", "..\ConsoleMultiCameraManager\ConsoleMultiCameraManager.vcxproj", "{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{BE4EA341-2CEA-48E1-BA52-3E755CB17CDB}.Release|x64.Build.0 = Release|x64
 		{BE4EA341-2CEA-48E1-BA52-3E755CB17CDB}.Release|x86.ActiveCfg = Release|Win32
 		{BE4EA341-2CEA-48E1-BA52-3E755CB17CDB}.Release|x86.Build.0 = Release|Win32
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Debug|x64.ActiveCfg = Debug|x64
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Debug|x64.Build.0 = Debug|x64
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Debug|x86.ActiveCfg = Debug|Win32
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Debug|x86.Build.0 = Debug|Win32
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Release|x64.ActiveCfg = Release|x64
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Release|x64.Build.0 = Release|x64
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Release|x86.ActiveCfg = Release|Win32
+		{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

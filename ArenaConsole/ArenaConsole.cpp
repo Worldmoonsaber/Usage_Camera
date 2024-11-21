@@ -96,14 +96,7 @@ int main()//int argc, char** argv
 			unsigned int* ptr=nullptr;
 			obj->Grab(ptr);
 
-			//thread thr= thread(thread_WorkContent,&ptr);
 
-			//Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
-
-			//resize(image_input, image_input, Size(532, 460));
-
-			//imshow("debug", image_input);
-			//cv:waitKey(0);
 		}
 	}
 

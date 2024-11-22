@@ -2,29 +2,46 @@
 #include "ICamera.h"
 #include <vector>
 #include "FakeCamera.h"
-#include "PersudoCamera.h"
+#include "ArenaCameraObject.h"
 
 static vector< ICamera*> lstCamera;
+
+#pragma region Arena相機 共用物件
+static Arena::ISystem* _System; //同時只能存在一個必須放在外面 且為static
+
+#pragma endregion
 
 void CameraManager::InitializeAllCamera()
 {
 	if (lstCamera.size() != 0)
 		return;
 
-	FakeCamera* fc=new FakeCamera();
-	lstCamera.push_back((ICamera*)fc);
-	ICamera* ic=new ICamera();
-	lstCamera.push_back(ic);
+#pragma region 初始化 Arena相機
+
+	_System = Arena::OpenSystem();
+	_System->UpdateDevices(100);
+
+	std::vector<Arena::DeviceInfo> _deviceInfos= _System->GetDevices();
+
+	for (int u = 0; u < _deviceInfos.size(); u++)
+	{
+		ArenaCameraObject* ACO =new ArenaCameraObject(_System,_deviceInfos[u]);
+		lstCamera.push_back(ACO);
+	}
+
+#pragma endregion
+
+
 
 }
 
 void CameraManager::CloseAllCamera()
 {
 	for (int i = 0; i < lstCamera.size(); i++)
-	{
 		lstCamera[i]->Close();
-	}
+
 	lstCamera.clear();
+	Arena::CloseSystem(_System);
 }
 
 void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
@@ -35,20 +52,11 @@ void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 	lstCamera[cameraId]->Grab(imgPtr);
 }
 
-void CameraManager::Grab(int cameraId, unsigned char*& imgPtr)
-{
-	if (cameraId < 0 || cameraId >= lstCamera.size())
-		return;
-
-	lstCamera[cameraId]->Grab(imgPtr);
-}
 
 void CameraManager::GetAllCameraNames(string strCameraNameArray[])
 {
 	for (int i = 0; i < lstCamera.size(); i++)
-	{
 		strCameraNameArray[i] = lstCamera[i]->CameraName();
-	}
 }
 
 
@@ -68,6 +76,30 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 	lstCamera[cameraId]->SetCameraParam(NodeName, Value);
 }
 
+void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value[])
+{
+	if (cameraId < 0 || cameraId >= lstCamera.size())
+		return;
+
+	if (Value->size() < NodeName->size())
+		return;
+
+	for(int i=0;i<NodeName->size();i++)
+		lstCamera[cameraId]->SetCameraParam(NodeName[i], Value[i]);
+}
+
+void CameraManager::GetCameraParam(int cameraId, string NodeName[], string Value[])
+{
+	if (cameraId < 0 || cameraId >= lstCamera.size())
+		return;
+
+	if (Value->size() < NodeName->size())
+		return;
+
+	for (int i = 0; i < NodeName->size(); i++)
+		lstCamera[cameraId]->GetCameraParam(NodeName[i], Value[i]);
+}
+
 void CameraManager::AcquisitionStart(int cameraId)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
@@ -82,4 +114,14 @@ void CameraManager::AcquisitionStop(int cameraId)
 		return;
 
 	lstCamera[cameraId]->AcquisitionStop();
+}
+
+void CameraManager::SaveCurrentCameraParam(int cameraId)
+{
+
+}
+
+void CameraManager::SaveAllCameraParam()
+{
+
 }

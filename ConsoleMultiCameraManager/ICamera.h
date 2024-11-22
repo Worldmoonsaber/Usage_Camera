@@ -15,7 +15,6 @@ public:
 	virtual void Close();
 
 	virtual void Grab(unsigned  int*& imgPtr);
-	virtual void Grab(unsigned char*& imgPtr);
 
 	virtual void SetCameraParam(string NodeName, string Value);
 	virtual void GetCameraParam(string NodeName, string& Value);

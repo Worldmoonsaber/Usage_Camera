@@ -139,13 +139,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArenaCameraObject.cpp" />
     <ClCompile Include="ConsoleMultiCameraManager.cpp" />
     <ClCompile Include="FakeCamera.cpp" />
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="MultiCameraManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ArenaCameraObj.h" />
+    <ClInclude Include="ArenaCameraObject.h" />
     <ClInclude Include="FakeCamera.h" />
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="MultiCameraManager.h" />

@@ -1,0 +1,11 @@
+ExposureTime:2801.65
+ExposureAuto:Off
+PixelFormat:Mono8
+ADCBitDepth:Bits8
+Width:5320
+Height:4600
+OffsetX:0
+OffsetY:0
+ReverseX:0
+ReverseY:0
+Gamma:1.202

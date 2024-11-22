@@ -93,7 +93,7 @@ int main()//int argc, char** argv
 		}
 		else 
 		{
-			unsigned int* ptr=nullptr;
+			unsigned int* ptr = (unsigned int*)malloc(5320 * 4600 * 8 * 4); //必須先提供記憶大小
 			obj->Grab(ptr);
 
 

@@ -73,7 +73,7 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 		return;
 
-	lstCamera[cameraId]->SetCameraParam(NodeName, Value);
+	lstCamera[cameraId]->GetCameraParam(NodeName, Value);
 }
 
 void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value[])

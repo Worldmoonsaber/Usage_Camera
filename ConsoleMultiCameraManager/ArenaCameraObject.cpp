@@ -9,7 +9,7 @@
 
 
 // Arena::ISystem* pSystem 同時只能存在一個
-ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem,Arena::DeviceInfo device)
+ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo device)
 {
 	_deviceInfo = device;
 
@@ -60,7 +60,8 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 	}
 	catch (exception ex)
 	{
-		cout << ex.what() << endl;	}
+		cout << ex.what() << endl;
+	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
@@ -69,24 +70,21 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 
 void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 {
-	if (_isNumeric(Value))
-	{
-		double dVal = atof(Value.c_str());
-		SetCameraParam(NodeName, dVal);
-		return;
-	}
-
 	try
 	{
-		string outputVal;
-		GetCameraParam(NodeName, outputVal);
+		//-----判斷是否為特殊字
 
-		if (Value != outputVal)
+		if (_isNumeric(Value))
 		{
-			const char* cNodeName = NodeName.c_str();
-			const char* cValue = Value.c_str();
-			Arena::SetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName, cValue);
+			if (_IsCurrentWriteSpecialNode(NodeName, Value))
+			{
+				return;
+			}
 		}
+
+		const char* cNodeName = NodeName.c_str();
+		const char* cValue = Value.c_str();
+		Arena::SetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName, cValue);
 	}
 	catch (std::exception ex)
 	{
@@ -102,9 +100,13 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 {
 	//---看看map有沒有如果有直接吐map裡面的值 這樣比較有效率
 
-
 	try
 	{
+		if (_IsCurrentReadSpecialNode(NodeName, Value))
+		{
+			return;
+		}
+
 		const char* cNodeName = NodeName.c_str();
 		GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName);
 		Value = string(value);
@@ -119,12 +121,40 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 	}
 }
 
-void ArenaCameraObject::SetCameraParam(string NodeName, double Value)
+void ArenaCameraObject::SetCameraParamDouble(string NodeName, double Value)
 {
+	const char* cNodeName = NodeName.c_str();
+	Arena::SetNodeValue<double>(_Device->GetNodeMap(), cNodeName, Value);
 }
 
-void ArenaCameraObject::GetCameraParam(string NodeName, double& Value)
+void ArenaCameraObject::GetCameraParamDouble(string NodeName, double& Value)
 {
+	const char* cNodeName = NodeName.c_str();
+	Value = Arena::GetNodeValue<double>(_Device->GetNodeMap(), cNodeName);
+}
+
+void ArenaCameraObject::SetCameraParamInt(string NodeName, int Value)
+{
+	const char* cNodeName = NodeName.c_str();
+	Arena::SetNodeValue<int64_t>(_Device->GetNodeMap(), cNodeName, Value);
+}
+
+void ArenaCameraObject::GetCameraParamInt(string NodeName, int& Value)
+{
+	const char* cNodeName = NodeName.c_str();
+	Value = Arena::GetNodeValue<int64_t>(_Device->GetNodeMap(), cNodeName);
+}
+
+void ArenaCameraObject::SetCameraParamBool(string NodeName, bool Value)
+{
+	const char* cNodeName = NodeName.c_str();
+	Arena::SetNodeValue<bool>(_Device->GetNodeMap(), cNodeName, Value);
+}
+
+void ArenaCameraObject::GetCameraParamBool(string NodeName, bool& Value)
+{
+	const char* cNodeName = NodeName.c_str();
+	Value = Arena::GetNodeValue<bool>(_Device->GetNodeMap(), cNodeName);
 }
 
 void ArenaCameraObject::Excute(string ExcuteCmd)
@@ -171,7 +201,6 @@ void ArenaCameraObject::AcquisitionStop()
 {
 	if (_IsStreamStart)
 	{
-		//Excute("AcquisitionStop");
 		_Device->StopStream();
 		_IsStreamStart = false;
 	}
@@ -179,6 +208,70 @@ void ArenaCameraObject::AcquisitionStop()
 
 void ArenaCameraObject::Save()
 {
+}
+
+bool ArenaCameraObject::_IsCurrentWriteSpecialNode(string NodeName, string Value)
+{
+	if (std::find(_ParamKey_ValueIsDouble.begin(), _ParamKey_ValueIsDouble.end(), NodeName) != _ParamKey_ValueIsDouble.end())
+	{
+		double dVal = atof(Value.c_str());
+		SetCameraParamDouble(NodeName, dVal);
+		return true;
+	}
+
+	if (std::find(_ParamKey_ValueIsInt.begin(), _ParamKey_ValueIsInt.end(), NodeName) != _ParamKey_ValueIsInt.end())
+	{
+		int nVal = atoi(Value.c_str());
+		SetCameraParamInt(NodeName, nVal);
+		return true;
+	}
+
+	if (std::find(_ParamKey_ValueIsBool.begin(), _ParamKey_ValueIsBool.end(), NodeName) != _ParamKey_ValueIsBool.end())
+	{
+		bool bVal = false;
+
+		if (Value == "true" || Value == "1")
+			bVal = true;
+
+		SetCameraParamBool(NodeName, bVal);
+		return true;
+	}
+
+
+
+	return false;
+}
+
+bool ArenaCameraObject::_IsCurrentReadSpecialNode(string NodeName, string& Value)
+{
+	if (std::find(_ParamKey_ValueIsDouble.begin(), _ParamKey_ValueIsDouble.end(), NodeName) != _ParamKey_ValueIsDouble.end())
+	{
+		double dVal;
+		GetCameraParamDouble(NodeName, dVal);
+		Value = to_string(dVal);
+		return true;
+	}
+
+	if (std::find(_ParamKey_ValueIsInt.begin(), _ParamKey_ValueIsInt.end(), NodeName) != _ParamKey_ValueIsInt.end())
+	{
+		int nVal;
+		GetCameraParamInt(NodeName, nVal);
+		Value = to_string(nVal);
+		return true;
+	}
+
+	if (std::find(_ParamKey_ValueIsBool.begin(), _ParamKey_ValueIsBool.end(), NodeName) != _ParamKey_ValueIsBool.end())
+	{
+		bool bVal;
+		GetCameraParamBool(NodeName, bVal);
+		Value = to_string(bVal);
+		return true;
+	}
+
+
+
+
+	return false;
 }
 
 bool ArenaCameraObject::_IsNodeValueDouble(string str)
@@ -192,7 +285,7 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 	{
 		Arena::IImage* image = _Device->GetImage(2000);
 		int indx = image->GetFrameId();
-		std::cout << "\n"  << "  image->GetFrameId: " << indx << "\n";
+		std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
 
 		unsigned int retry_count = 0;
 		const unsigned int retry_count_max = 10;
@@ -248,27 +341,17 @@ void ArenaCameraObject::_LoadConfig()
 
 	if ((_access(strPath.c_str(), 0)) != -1)
 	{
-		//---檔案存在 讀取檔案
-				//---檔案存在 讀取檔案
-		//fstream read_file;
-		//read_file.open(strPath, ios::in);
-
-		//string data;
-		//while (std::getline(read_file, data))
-		//{
-		//	cout << data << '\n';
-		//	vector<std::string> vStr = split(data, ":");
-		//	SetCameraParam(vStr[0], vStr[1]);
-		//}
-
-		//read_file.close();
-
 		std::ifstream ifs(strPath, std::ios::in);
 
 		std::string s;
-		while (std::getline(ifs, s)) 
+		while (std::getline(ifs, s))
 		{
 			vector<string> vStr = _split(s, ":");
+
+			//cout << s << '\n';
+
+			if (vStr.size() >= 2)
+				SetCameraParam(vStr[0], vStr[1]);
 		}
 		ifs.close();
 

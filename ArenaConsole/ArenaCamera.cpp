@@ -48,7 +48,7 @@ void ArenaCameraObj::Initialize()
 			std::cout << "\n" << TAB << "Detected device :" << " (" << u << ") "
 				<< _deviceInfos[u].ModelName() << " Serial Number :" << _deviceInfos[u].SerialNumber() << "\n";
 
-			_LoadConfig(pDevice, _deviceInfos[u]);
+			//_LoadConfig(pDevice, _deviceInfos[u]);
 
 		}
 
@@ -306,7 +306,7 @@ void ArenaCameraObj::AcquisitionStart()
 		{
 			Arena::IDevice* pDevice= _deviceObj[_SelectIndx];
 
-			SetCameraParam("PixelFormat", "BGR8");
+			//SetCameraParam("PixelFormat", "BGR8");
 			SetCameraParam("AcquisitionMode", "Continuous");
 
 			Arena::SetNodeValue<bool>(pDevice->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);

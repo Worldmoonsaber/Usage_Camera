@@ -28,13 +28,10 @@ namespace CameraManager
 
 }
 
-//--以下是有被定義的 NodeName (所有相機通用的介面)
-
-//  Red   :  Red Gain
-//  Green :  Green Gain
-//  Blue  :  Blue Gain
-//  Gamma
-//	PixelFormat
-//	ExposureTime
-
-// 其他未定義者,依照各項原本的參數名稱 
+//--以下是有被定義的 NodeName (所有相機通用的介面) 以後所有種類相機都套用以下規則
+//
+//  Red			:  Red Gain
+//  Green		:  Green Gain
+//  Blue		:  Blue Gain
+//  Gain
+// 其他未定義者,依照各相機原本的參數名稱

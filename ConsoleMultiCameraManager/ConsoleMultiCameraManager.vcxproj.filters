@@ -24,9 +24,6 @@
     <ClCompile Include="ICamera.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="FakeCamera.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
     <ClCompile Include="ArenaCameraObject.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="ICamera.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
-    <ClInclude Include="FakeCamera.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="ArenaCameraObject.h">

@@ -362,14 +362,6 @@ void ArenaCameraObject::_LoadConfig()
 		fstream write_file;
 		write_file.open(strPath, std::ios::out);
 
-		//std::vector<std::string> str;
-		//str.push_back("001:xxA\n");
-		//str.push_back("002:xxB\n");
-		//str.push_back("003:xxC\n");
-
-		//for (auto& s : str)
-		//    write_file << s;
-
 		write_file.close();
 	}
 }

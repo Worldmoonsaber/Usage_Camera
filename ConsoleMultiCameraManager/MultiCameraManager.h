@@ -23,9 +23,6 @@ namespace CameraManager
 	__declspec(dllexport)  void AcquisitionStart(int cameraId);
 	__declspec(dllexport)  void AcquisitionStop(int cameraId);
 
-	__declspec(dllexport)  void SaveCurrentCameraParam(int cameraId);
-	__declspec(dllexport)  void SaveAllCameraParam();
-
 }
 
 //--以下是有被定義的 NodeName (所有相機通用的介面) 以後所有種類相機都套用以下規則

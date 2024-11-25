@@ -1,8 +1,6 @@
-ExposureTime:14996.9
+ExposureTime:2800
 ExposureAuto:Off
-ExposureAutoLimitAuto:Continuous
 PixelFormat:BGR8
-ADCBitDepth:Bits8
 Width:5320
 Height:4600
 OffsetX:0

@@ -45,4 +45,3 @@ string ICamera::CameraName()
 {
 	return _strName;
 }
-

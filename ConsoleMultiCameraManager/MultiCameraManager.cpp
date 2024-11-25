@@ -1,13 +1,13 @@
 #include "MultiCameraManager.h"
 #include "ICamera.h"
 #include <vector>
-#include "FakeCamera.h"
 #include "ArenaCameraObject.h"
 
-static vector< ICamera*> lstCamera;
+
+static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 
 #pragma region Arena相機 共用物件
-static Arena::ISystem* _System; //同時只能存在一個必須放在外面 且為static
+static Arena::ISystem* _System; //同時只能存在一個必須放在外面 令其為static
 
 #pragma endregion
 
@@ -37,11 +37,16 @@ void CameraManager::InitializeAllCamera()
 
 void CameraManager::CloseAllCamera()
 {
+#pragma region 關閉 Arena相機
+
 	for (int i = 0; i < lstCamera.size(); i++)
 		lstCamera[i]->Close();
 
 	lstCamera.clear();
 	Arena::CloseSystem(_System);
+
+#pragma region 關閉 Arena相機
+
 }
 
 void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
@@ -114,14 +119,4 @@ void CameraManager::AcquisitionStop(int cameraId)
 		return;
 
 	lstCamera[cameraId]->AcquisitionStop();
-}
-
-void CameraManager::SaveCurrentCameraParam(int cameraId)
-{
-
-}
-
-void CameraManager::SaveAllCameraParam()
-{
-
 }

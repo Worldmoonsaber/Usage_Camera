@@ -54,7 +54,6 @@ private:
 	void _LoadConfig();
 	bool _isNumeric(std::string const& str);
 	std::vector<std::string> _split(const std::string& str, const std::string& pattern);
-	std::map<string,string> _ParamKeyMap;
 
 #pragma region 對應ARENA 的使用方式建表
 

@@ -7,7 +7,6 @@
 #include <string> // strlen
 #include <chrono>
 
-
 // Arena::ISystem* pSystem 同時只能存在一個
 ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo device)
 {

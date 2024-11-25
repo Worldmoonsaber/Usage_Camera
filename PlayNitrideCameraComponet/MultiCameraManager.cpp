@@ -31,6 +31,8 @@ void CameraManager::InitializeAllCamera()
 
 #pragma endregion
 
+	cout << "已偵測相機數量: " << lstCamera.size() << endl;
+
 
 
 }

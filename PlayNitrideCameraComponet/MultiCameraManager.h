@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 #include<fstream>
+//#include "pch.h"
 
-#pragma comment(lib,"PlayNitrideCameraComponet.lib")
 
 using namespace std;
 

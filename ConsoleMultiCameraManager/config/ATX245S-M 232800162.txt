@@ -1,8 +1,0 @@
-ExposureTime:4700
-TargetBrightness:128
-PixelFormat:Mono8
-Width:5320
-Height:4600
-OffsetX:0
-OffsetY:0
-

@@ -15,7 +15,6 @@ using namespace cv;
 int main()
 {
 
-    std::cout << "Test!\n";
 
     CameraManager::InitializeAllCamera();
 
@@ -23,7 +22,10 @@ int main()
 
     CameraManager::GetAllCameraNames(strArr);
 
+    
     CameraManager::AcquisitionStart(0);
+
+
 
     string strVal;
     CameraManager::GetCameraParam(0,"PixelFormat", strVal);
@@ -36,24 +38,21 @@ int main()
         channels = 4;
 
     CameraManager::GetCameraParam(0, "Width", strVal);
-
     int Width = atoi(strVal.c_str());
 
     CameraManager::GetCameraParam(0, "Height", strVal);
-
     int Height = atoi(strVal.c_str());
-
 
     unsigned int* ptr = (unsigned int*)malloc(Width * Height * 8 * channels); //必須先提供記憶大小
     CameraManager::Grab(0, ptr);
         
     Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
 
-    resize(image_input, image_input, Size(532, 460));
-    //imwrite("E://debug.bmp", image_input);
-    imshow("debug", image_input);
-    cv:waitKey(0);
-    free(ptr);
+    //resize(image_input, image_input, Size(532, 460));
+    ////imwrite("E://debug.bmp", image_input);
+    //imshow("debug", image_input);
+    //cv:waitKey(0);
+    //free(ptr);
 
     CameraManager::AcquisitionStop(0);
 

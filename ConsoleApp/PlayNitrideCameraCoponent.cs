@@ -10,6 +10,9 @@ namespace ConsoleApp
 {
     public class PlayNitrideCameraCoponent
     {
+        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
+
+
         #region Public
 
         [DllImport(dllPath, EntryPoint = "CSharp_InitializeAllCamera", CallingConvention = CallingConvention.Cdecl)]
@@ -77,8 +80,6 @@ namespace ConsoleApp
 
         #region 已確認 內容 功能測試 OK
 
-        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
-
         [DllImport(dllPath, EntryPoint = "CSharp_GetAllCamera", CallingConvention = CallingConvention.Cdecl)]
         private static extern void _GetAllCamera([Out] IntPtr[] array);
 
@@ -93,8 +94,15 @@ namespace ConsoleApp
 
         #region 待完善
 
-        [DllImport(dllPath, EntryPoint = "CSharp_Grab", CallingConvention = CallingConvention.Cdecl)]
+        
+        [DllImport(dllPath, EntryPoint = "CSharp_GrabChar", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Grab(int cameraId);
+
+
+
+
+        //[DllImport(dllPath, EntryPoint = "CSharp_Grab", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern IntPtr Grab(int cameraId);
 
         #endregion
     }

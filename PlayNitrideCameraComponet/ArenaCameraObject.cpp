@@ -67,8 +67,32 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 	}
 }
 
-void ArenaCameraObject::Grab(unsigned char*& imgPtr)
+void ArenaCameraObject::Grab(void*& imgPtr)
 {
+	try
+	{
+		//-----設定觸發模式
+		string Value;
+
+		auto t_start = std::chrono::high_resolution_clock::now();
+
+		bool triggerArmed = false;
+
+		_GetImgPtr(imgPtr); //因為現在是Free Run所以不需要 trigger
+
+		auto t_end = std::chrono::high_resolution_clock::now();
+		double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
+
+		cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
+	}
+	catch (exception ex)
+	{
+		cout << ex.what() << endl;
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		cout << ge.what() << endl;
+	}
 }
 
 void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
@@ -322,7 +346,7 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 	}
 }
 
-void ArenaCameraObject::_GetImgPtr(unsigned char*& imgPtr)
+void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 {
 		try
 	{

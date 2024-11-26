@@ -30,11 +30,11 @@ void CameraManager::InitializeAllCamera()
 
 #pragma endregion
 
-	if (lstCamera.size() == 0)
-	{
-		ICamera* ic = new ICamera();
-		lstCamera.push_back(ic);
-	}
+	//if (lstCamera.size() == 0)
+	//{
+	//	ICamera* ic = new ICamera();
+	//	lstCamera.push_back(ic);
+	//}
 
 	cout << "已偵測相機數量: " << lstCamera.size() << endl;
 }
@@ -61,7 +61,7 @@ void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 	lstCamera[cameraId]->Grab(imgPtr);
 }
 
-void CameraManager::Grab(int cameraId, unsigned char*& imgPtr)
+void CameraManager::Grab(int cameraId, void*& imgPtr)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 		return;
@@ -159,9 +159,9 @@ unsigned  int* CSharp_GrabInt(int cameraId)
 	return imgPtr;
 }
 
-unsigned char* CSharp_GrabChar(int cameraId)
+void* CSharp_GrabChar(int cameraId)
 {
-	unsigned char* imgPtr;
+	void* imgPtr;
 	CameraManager::Grab(cameraId, imgPtr);
 	return imgPtr;
 }

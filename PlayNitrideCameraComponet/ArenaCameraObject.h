@@ -21,7 +21,7 @@ public:
 	void Close();
 
 	void Grab(unsigned int*& imgPtr);
-	void Grab(unsigned  char*& imgPtr);
+	void Grab(void*& imgPtr);
 
 	void SetCameraParam(string NodeName, string Value);
 	void GetCameraParam(string NodeName, string& Value);
@@ -51,7 +51,7 @@ private:
 	Arena::IDevice* _Device;
 
 	void _GetImgPtr(unsigned int*& imgPtr);
-	void _GetImgPtr(unsigned char*& imgPtr);
+	void _GetImgPtr(void*& imgPtr);
 
 
 	Arena::ISystem* _pSystem;

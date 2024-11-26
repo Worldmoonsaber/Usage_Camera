@@ -28,11 +28,24 @@ void ICamera::Grab(unsigned int*& imgPtr)
 	imgPtr = (unsigned int*)chipImg.data;
 	_Width = chipImg.size().width;
 	_Height = chipImg.size().height;
-
+	_Channels=chipImg.channels();
 }
 
-void ICamera::Grab(unsigned char*& imgPtr)
+void ICamera::Grab(void*& imgPtr)
 {
+	cout << "ICamera Grab void*" << endl;
+
+	cv::Mat chipImg = cv::imread("C:\\Image\\4X4\\1836\\183601.bmp");
+
+	imgPtr = (void*)chipImg.data;
+	_Width = chipImg.size().width;
+	_Height = chipImg.size().height;
+	_Channels = chipImg.channels();
+
+
+	cv::Mat image_output(_Width, _Height, CV_8UC4, imgPtr);
+
+	cv::imwrite(, image_output);
 }
 
 
@@ -49,6 +62,8 @@ void ICamera::GetCameraParam(string NodeName, string& Value)
 		Value = to_string(_Width);
 	else if (NodeName == "Height")
 		Value = to_string(_Height);
+	else if(NodeName=="Channels")
+		Value= to_string(_Channels);
 
 }
 

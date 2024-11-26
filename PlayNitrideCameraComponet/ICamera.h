@@ -17,7 +17,7 @@ public:
 
 	virtual void Grab(unsigned  int*& imgPtr);
 
-	virtual void Grab(unsigned char*& imgPtr);
+	virtual void Grab(void*& imgPtr);
 
 
 	virtual void SetCameraParam(string NodeName, string Value);
@@ -35,4 +35,5 @@ protected:
 private:
 	int _Width;
 	int _Height;
+	int _Channels;
 };

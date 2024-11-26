@@ -14,7 +14,7 @@ namespace CameraManager
 	__declspec(dllexport)  void CloseAllCamera();
 
 	__declspec(dllexport)  void Grab(int cameraId, unsigned  int*& imgPtr);
-	__declspec(dllexport)  void Grab(int cameraId, unsigned  char*& imgPtr);
+	__declspec(dllexport)  void Grab(int cameraId, void*& imgPtr);
 
 	__declspec(dllexport)  void GetAllCameraNames(string strCameraNameArray[]);
 
@@ -35,7 +35,7 @@ extern "C" __declspec(dllexport)  void CSharp_InitializeAllCamera();
 extern "C" __declspec(dllexport)  void CSharp_CloseAllCamera();
 
 extern "C" __declspec(dllexport)  unsigned  int* CSharp_GrabInt(int cameraId);
-extern "C" __declspec(dllexport)  unsigned  char* CSharp_GrabChar(int cameraId);
+extern "C" __declspec(dllexport)  void* CSharp_GrabChar(int cameraId);
 
 
 extern "C" __declspec(dllexport)  void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value);

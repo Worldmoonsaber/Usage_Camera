@@ -67,6 +67,10 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 	}
 }
 
+void ArenaCameraObject::Grab(unsigned char*& imgPtr)
+{
+}
+
 void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 {
 	try
@@ -316,6 +320,47 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 	catch (...)
 	{
 	}
+}
+
+void ArenaCameraObject::_GetImgPtr(unsigned char*& imgPtr)
+{
+		try
+	{
+		Arena::IImage* image = _Device->GetImage(2000);
+		int indx = image->GetFrameId();
+		std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
+
+		unsigned int retry_count = 0;
+		const unsigned int retry_count_max = 10;
+
+		while (image->IsIncomplete())
+		{
+			retry_count++;
+			_Device->RequeueBuffer(image);
+			image = _Device->GetImage(100);
+			if (retry_count > retry_count_max)
+			{
+				return;
+			}
+		}
+
+		size_t height = image->GetHeight();
+		size_t width = image->GetWidth();
+		size_t bits_per_pixel = image->GetBitsPerPixel();
+		size_t bytes_per_pixel = bits_per_pixel / 8;
+		size_t image_data_size_bytes = width * height * bytes_per_pixel;
+
+		memcpy(imgPtr, image->GetData(), image_data_size_bytes);
+		_Device->RequeueBuffer(image);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		cout << ge.what() << endl;
+	}
+	catch (...)
+	{
+	}
+
 }
 
 void ArenaCameraObject::_LoadConfig()

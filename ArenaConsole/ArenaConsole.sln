@@ -7,9 +7,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArenaConsole", "ArenaConsol
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleMultiCameraManager", "..\ConsoleMultiCameraManager\ConsoleMultiCameraManager.vcxproj", "{2C38B3A5-9D87-4F22-B958-4AA3F2BD90FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraCalibrator", "..\CameraCalibrator\CameraCalibrator.csproj", "{95F18FE8-DF1E-4543-AC77-BC9771982D86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CameraCalibrator", "..\CameraCalibrator\CameraCalibrator.csproj", "{95F18FE8-DF1E-4543-AC77-BC9771982D86}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlayNitrideCameraComponet", "..\PlayNitrideCameraComponet\PlayNitrideCameraComponet.vcxproj", "{1710CFCE-FB33-4137-9041-45AEDB127AAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp_CSharpUseCppDll", "..\ConsoleApp\ConsoleApp_CSharpUseCppDll.csproj", "{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,18 @@ Global
 		{1710CFCE-FB33-4137-9041-45AEDB127AAD}.Release|x64.Build.0 = Release|x64
 		{1710CFCE-FB33-4137-9041-45AEDB127AAD}.Release|x86.ActiveCfg = Release|Win32
 		{1710CFCE-FB33-4137-9041-45AEDB127AAD}.Release|x86.Build.0 = Release|Win32
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|x64.Build.0 = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Debug|x86.Build.0 = Debug|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|x64.ActiveCfg = Release|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|x64.Build.0 = Release|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|x86.ActiveCfg = Release|Any CPU
+		{5A1FCAE0-7411-45D1-AC6F-D755CFFA7F4F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

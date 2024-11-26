@@ -3,7 +3,7 @@
 #include <iostream>
 #include<fstream>
 
-#pragma comment(lib,"PlayNitrideCameraComponet.lib")
+#pragma comment(lib,"C:\\Git\\Usage_Camera\\ConsoleMultiCameraManager\\PlayNitrideCameraComponet.lib")
 
 using namespace std;
 

@@ -7,12 +7,14 @@
 
 using namespace std;
 
+
 namespace CameraManager
 {
-	__declspec(dllexport)  void InitializeAllCamera();
+	 __declspec(dllexport)  void InitializeAllCamera();
 	__declspec(dllexport)  void CloseAllCamera();
 
 	__declspec(dllexport)  void Grab(int cameraId, unsigned  int*& imgPtr);
+	__declspec(dllexport)  void Grab(int cameraId, unsigned  char*& imgPtr);
 
 	__declspec(dllexport)  void GetAllCameraNames(string strCameraNameArray[]);
 
@@ -27,10 +29,23 @@ namespace CameraManager
 
 }
 
-//--以下是有被定義的 NodeName (所有相機通用的介面) 以後所有種類相機都套用以下規則
-//
-//  Red			:  Red Gain
-//  Green		:  Green Gain
-//  Blue		:  Blue Gain
-//  Gain
-// 其他未定義者,依照各相機原本的參數名稱
+#pragma region CSharp 使用的對接口
+
+extern "C" __declspec(dllexport)  void CSharp_InitializeAllCamera();
+extern "C" __declspec(dllexport)  void CSharp_CloseAllCamera();
+
+extern "C" __declspec(dllexport)  unsigned  int* CSharp_GrabInt(int cameraId);
+extern "C" __declspec(dllexport)  unsigned  char* CSharp_GrabChar(int cameraId);
+
+
+extern "C" __declspec(dllexport)  void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value);
+extern "C" __declspec(dllexport)  const char* CSharp_GetCameraParam(int cameraId, const char* NodeName);
+
+extern "C" __declspec(dllexport)  void CSharp_AcquisitionStart(int cameraId);
+extern "C" __declspec(dllexport)  void CSharp_AcquisitionStop(int cameraId);
+
+extern "C" __declspec(dllexport) void CSharp_GetAllCamera(const char** array);
+
+extern "C" __declspec(dllexport) void CSharp_FreeIntptrMemory(void* str);
+
+#pragma endregion

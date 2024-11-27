@@ -21,16 +21,12 @@ namespace ConsoleApp
 
             string strVal;
             ConsoleApp.PlayNitrideCameraCoponent.GetAllCamera(out list);
-
             ConsoleApp.PlayNitrideCameraCoponent.SetCameraParam(0, "Name", "Value");
             ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "TestNode", out strVal);
-            //ConsoleApp.PlayNitrideCameraCoponent.SetCameraParam(0, "testName", "testValue");
-
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStart(0);
 
 
-            IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
-
+            IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(3);
 
             string strW,strH,strCh;
             ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width",out strW);
@@ -40,34 +36,41 @@ namespace ConsoleApp
             int width = Convert.ToInt32(strW);   // 圖片寬度
             int height = Convert.ToInt32(strH);  // 圖片高度
             int stride = width * 3; // 每行的字節數（RGB 每像素 3 字節）
-            int channels=Convert.ToInt32(strCh);
+            int channels=4;
 
-
-
-            // 獲取數據指針
-
-            // 創建 Bitmap
-            //Bitmap bitmap = new Bitmap(width,height,stride, PixelFormat.Format24bppRgb, ImgPtr);
-
-
-            //Mat img= Mat.f("C:\\Image\\4X4\\1836\\183601.bmp");
-
-            //// 創建 Bitmap 並將像素數據封裝進去
-            //Bitmap bitmap = new Bitmap(width, height, stride, PixelFormat.Format24bppRgb, ImgPtr);
-
-            //// 使用 Bitmap
-            //Console.WriteLine("Bitmap Size: " + bitmap.Width + "x" + bitmap.Height);
-            //Mat img =Mat.FromPixelData(width, height, MatType.CV_8UC4, ImgPtr);
-            //Bitmap bitmap = Bitmap.FromHbitmap(ImgPtr);
-            
+            unsafe
+            { //存檔測試
+                Bitmap bitmap = debug.CreateBitmapFromPointer(ImgPtr, width, height);
+            }
 
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStop(0);
-
-
+            
+            
             ConsoleApp.PlayNitrideCameraCoponent.CloseAllCamera();
+        }
+    }
 
-            Console.ReadLine();
 
+    class debug
+    {
+        public static unsafe Bitmap CreateBitmapFromPointer(IntPtr ptr, int width, int height)
+        {
+            // 建立 Bitmap
+            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb);
+
+            // 鎖定 Bitmap 的像素資料
+            BitmapData bitmapData = bitmap.LockBits(
+                new Rectangle(0, 0, width, height),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppRgb);
+
+            // 將指標資料複製到 Bitmap
+            Buffer.MemoryCopy((void*)ptr, (void*)bitmapData.Scan0, width * height * 4, width * height * 4);
+
+            // 解鎖 Bitmap
+            bitmap.UnlockBits(bitmapData);
+
+            return bitmap;
         }
     }
 }

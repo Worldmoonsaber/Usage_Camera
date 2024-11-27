@@ -10,7 +10,9 @@ namespace ConsoleApp
 {
     public class PlayNitrideCameraCoponent
     {
-        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
+
+        // C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll
+        const string dllPath = "dll\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
 
 
         #region Public
@@ -18,18 +20,14 @@ namespace ConsoleApp
         [DllImport(dllPath, EntryPoint = "CSharp_InitializeAllCamera", CallingConvention = CallingConvention.Cdecl)]
         public static extern void InitializeAllCamera();
 
-
         [DllImport(dllPath, EntryPoint = "CSharp_CloseAllCamera", CallingConvention = CallingConvention.Cdecl)]
         public static extern void CloseAllCamera();
-
 
         [DllImport(dllPath, EntryPoint = "CSharp_AcquisitionStart", CallingConvention = CallingConvention.Cdecl)]
         public static extern void AcquisitionStart(int cameraId);
 
-
         [DllImport(dllPath, EntryPoint = "CSharp_AcquisitionStop", CallingConvention = CallingConvention.Cdecl)]
         public static extern void AcquisitionStop(int cameraId);
-
 
         public static void GetAllCamera(out List<string> lstCamera)
         {
@@ -89,20 +87,17 @@ namespace ConsoleApp
         [DllImport(dllPath, EntryPoint = "CSharp_FreeIntptrMemory", CallingConvention = CallingConvention.Cdecl)]
         private static extern void FreeIntptrMemory(IntPtr str);
 
+        [DllImport(dllPath, EntryPoint = "CSharp_Grab", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr Grab(int cameraId);
+
         #endregion
 
 
         #region 待完善
 
-        
-        [DllImport(dllPath, EntryPoint = "CSharp_GrabChar", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr Grab(int cameraId);
 
 
 
-
-        //[DllImport(dllPath, EntryPoint = "CSharp_Grab", CallingConvention = CallingConvention.Cdecl)]
-        //public static extern IntPtr Grab(int cameraId);
 
         #endregion
     }

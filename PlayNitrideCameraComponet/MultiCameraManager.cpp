@@ -4,6 +4,12 @@
 #include "ArenaCameraObject.h"
 #include <cstring>
 #include <cstdlib>
+#include<opencv2/opencv.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp> //mophorlogical operation
+#include<opencv2/core.hpp>
+#include <opencv2/core/mat.hpp>
+
 
 static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 #pragma region Arena相機 共用物件
@@ -30,13 +36,16 @@ void CameraManager::InitializeAllCamera()
 
 #pragma endregion
 
-	//if (lstCamera.size() == 0)
-	//{
-	//	ICamera* ic = new ICamera();
-	//	lstCamera.push_back(ic);
-	//}
+	ICamera* ic = new ICamera();
+	lstCamera.push_back(ic);
+
 
 	cout << "已偵測相機數量: " << lstCamera.size() << endl;
+}
+
+int CameraManager::CameraCount()
+{
+	return lstCamera.size();
 }
 
 void CameraManager::CloseAllCamera()
@@ -139,6 +148,39 @@ void CameraManager::AcquisitionStop(int cameraId)
 	lstCamera[cameraId]->AcquisitionStop();
 }
 
+void CameraManager::FreeIntptrMemoryInt(unsigned int* imgPtr)
+{
+	CSharp_FreeIntptrMemory((void*)imgPtr);
+}
+
+void CameraManager::FreeIntptrMemoryChar(unsigned char* imgPtr)
+{
+	CSharp_FreeIntptrMemory((void*)imgPtr);
+}
+
+void CameraManager::FreeIntptrMemoryImage(void* imgPtr)
+{
+	delete[] static_cast<char*>(imgPtr);
+}
+
+void CameraManager::SaveCurrentCameraParam(int cameraId)
+{
+	if (cameraId < 0 || cameraId >= lstCamera.size())
+		return;
+
+	lstCamera[cameraId]->Save();
+
+}
+
+void CameraManager::LoadSavedCameraParam(int cameraId)
+{
+	if (cameraId < 0 || cameraId >= lstCamera.size())
+		return;
+
+	lstCamera[cameraId]->Load();
+
+}
+
 
 #pragma region CSharp
 
@@ -152,18 +194,24 @@ void CSharp_CloseAllCamera()
 	CameraManager::CloseAllCamera();
 }
 
-unsigned  int* CSharp_GrabInt(int cameraId)
-{
-	unsigned int* imgPtr;
-	CameraManager::Grab(cameraId, imgPtr);
-	return imgPtr;
-}
+void* CSharp_Grab(int cameraId)
+{	
+	string strVal;
+	CameraManager::GetCameraParam(0, "Channels", strVal);
 
-void* CSharp_GrabChar(int cameraId)
-{
-	void* imgPtr;
-	CameraManager::Grab(cameraId, imgPtr);
-	return imgPtr;
+	int channels = atoi(strVal.c_str());
+
+	CameraManager::GetCameraParam(0, "Width", strVal);
+	int Width = atoi(strVal.c_str());
+
+	CameraManager::GetCameraParam(0, "Height", strVal);
+	int Height = atoi(strVal.c_str());
+
+	unsigned int* ptr = (unsigned int*)malloc(Width * Height * 8 * channels); //必須先提供記憶大小
+		
+	CameraManager::Grab(cameraId, ptr);
+
+	return ptr;
 }
 
 void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value)
@@ -196,11 +244,10 @@ void CSharp_AcquisitionStop(int cameraId)
 
 void CSharp_GetAllCamera(const char** array) 
 {
-
 	string strCameraNameArray[20];
 	CameraManager::GetAllCameraNames(strCameraNameArray);
-
-		for (int i = 0; i < strCameraNameArray->length(); i++)
+	
+	for (int i = 0; i < strCameraNameArray->length(); i++)
 	{
 		if (strCameraNameArray[i] != "")
 		{

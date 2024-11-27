@@ -10,7 +10,8 @@ using namespace std;
 
 namespace CameraManager
 {
-	 __declspec(dllexport)  void InitializeAllCamera();
+	__declspec(dllexport)  void InitializeAllCamera();
+	__declspec(dllexport)  int	CameraCount();
 	__declspec(dllexport)  void CloseAllCamera();
 
 	__declspec(dllexport)  void Grab(int cameraId, unsigned  int*& imgPtr);
@@ -27,6 +28,14 @@ namespace CameraManager
 	__declspec(dllexport)  void AcquisitionStart(int cameraId);
 	__declspec(dllexport)  void AcquisitionStop(int cameraId);
 
+	__declspec(dllexport) void FreeIntptrMemoryInt(unsigned  int* imgPtr);
+	__declspec(dllexport) void FreeIntptrMemoryChar(unsigned  char* imgPtr);
+	__declspec(dllexport) void FreeIntptrMemoryImage(void* imgPtr);
+
+	__declspec(dllexport)  void SaveCurrentCameraParam(int cameraId);
+	__declspec(dllexport)  void LoadSavedCameraParam(int cameraId);
+
+
 }
 
 #pragma region CSharp 使用的對接口
@@ -34,8 +43,7 @@ namespace CameraManager
 extern "C" __declspec(dllexport)  void CSharp_InitializeAllCamera();
 extern "C" __declspec(dllexport)  void CSharp_CloseAllCamera();
 
-extern "C" __declspec(dllexport)  unsigned  int* CSharp_GrabInt(int cameraId);
-extern "C" __declspec(dllexport)  void* CSharp_GrabChar(int cameraId);
+extern "C" __declspec(dllexport)  void* CSharp_Grab(int cameraId);
 
 
 extern "C" __declspec(dllexport)  void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value);

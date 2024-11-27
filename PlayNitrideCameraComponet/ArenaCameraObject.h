@@ -6,6 +6,7 @@
 #include<fstream>
 #include<cstring>
 #include <map>
+#include <mutex>
 //#include "pch.h"
 
 using namespace std;
@@ -32,8 +33,15 @@ public:
 	void AcquisitionStop();
 
 	void Save();
+	void Load();
 
 private:
+
+	std::mutex _mtx_Grab;
+	std::mutex _mtx_SetParam;
+	std::mutex _mtx_GetParam;
+
+
 
 	void SetCameraParamDouble(string NodeName, double Value);
 	void GetCameraParamDouble(string NodeName, double& Value);
@@ -60,6 +68,8 @@ private:
 	void _LoadConfig();
 	bool _isNumeric(std::string const& str);
 	std::vector<std::string> _split(const std::string& str, const std::string& pattern);
+
+	map<string, string> _mapParam;
 
 #pragma region 對應ARENA 的使用方式建表
 

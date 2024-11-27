@@ -41,6 +41,7 @@ void ArenaCameraObject::Close()
 
 void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 {
+	std::lock_guard<std::mutex> lock(_mtx_Grab);
 	try
 	{
 		//-----設定觸發模式
@@ -65,10 +66,14 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 	{
 		cout << ge.what() << endl;
 	}
+
+	_mtx_Grab.unlock();
 }
 
 void ArenaCameraObject::Grab(void*& imgPtr)
 {
+	std::lock_guard<std::mutex> lock(_mtx_Grab);
+
 	try
 	{
 		//-----設定觸發模式
@@ -93,6 +98,9 @@ void ArenaCameraObject::Grab(void*& imgPtr)
 	{
 		cout << ge.what() << endl;
 	}
+
+	_mtx_Grab.unlock();
+
 }
 
 void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
@@ -126,6 +134,13 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 {
 	//---看看map有沒有如果有直接吐map裡面的值 這樣比較有效率
+	//if (NodeName == "Width")
+	//	Value = to_string(_Width);
+	//else if (NodeName == "Height")
+	//	Value = to_string(_Height);
+	//else if (NodeName == "Channels")
+	//	Value = to_string(_Channels);
+
 
 	try
 	{
@@ -235,6 +250,11 @@ void ArenaCameraObject::AcquisitionStop()
 
 void ArenaCameraObject::Save()
 {
+}
+
+void ArenaCameraObject::Load()
+{
+	_LoadConfig();
 }
 
 bool ArenaCameraObject::_IsCurrentWriteSpecialNode(string NodeName, string Value)

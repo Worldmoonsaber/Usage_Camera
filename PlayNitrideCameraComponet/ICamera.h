@@ -28,12 +28,13 @@ public:
 
 	string CameraName();
 	//-----ヘ玡临⊿Τ稱Τ诀 盢Log癟┻ SubVi 硂场だ痙ゼㄓэ秈 既ぃ秈︽砏购
-
+	void Save();
+	void Load();
 protected:
 	string _strName = "No Name"; //膥┯砆
 
 private:
-	int _Width;
-	int _Height;
-	int _Channels;
+	int _Width=5320;//代刚ノ计
+	int _Height=4600;//代刚ノ计
+	int _Channels=4;//代刚ノ计
 };

@@ -3,7 +3,7 @@
 #include <iostream>
 #include<fstream>
 
-#pragma comment(lib,"C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib")
+#pragma comment(lib,"dll\\PlayNitrideCameraComponet.lib")
 
 using namespace std;
 
@@ -33,22 +33,5 @@ namespace CameraManager
 
 	__declspec(dllexport)  void SaveCurrentCameraParam(int cameraId);
 	__declspec(dllexport)  void LoadSavedCameraParam(int cameraId);
-
-	/*
-	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, unsigned  int*& imgPtr);
-	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, void*& imgPtr);
-	__declspec(dllexport)  void SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string Value);
-	__declspec(dllexport)  void GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string& Value);
-
-	__declspec(dllexport)  void SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[]);
-	__declspec(dllexport)  void GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[]);
-
-	__declspec(dllexport)  void AcquisitionStart_byCameraNickName(string strCameraNickname);
-	__declspec(dllexport)  void AcquisitionStop_byCameraNickName(string strCameraNickname);
-
-	__declspec(dllexport)  void SaveCurrentCameraParam_byCameraNickName(string strCameraNickname);
-	__declspec(dllexport)  void LoadSavedCameraParam_byCameraNickName(string strCameraNickname);
-	*/
-
 }
 

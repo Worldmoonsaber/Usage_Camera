@@ -89,6 +89,11 @@ void CameraManager::GetAllCameraNames(string strCameraNameArray[])
 		strCameraNameArray[i] = lstCamera[i]->CameraName();
 }
 
+void CameraManager::GetCameraName(int cameraId,string& strCameraNameArray)
+{
+	strCameraNameArray = lstCamera[cameraId]->CameraName();
+}
+
 
 void CameraManager::SetCameraParam(int cameraId, string NodeName, string Value)
 {

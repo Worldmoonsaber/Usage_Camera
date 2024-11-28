@@ -42,6 +42,8 @@ private:
 	std::mutex _mtx_GetParam;
 
 	void _UpdateMap(string NodeName, string Value);
+	void _CreateMap(string NodeName, string Value);
+
 	bool _IsParamInMap(string NodeName, string& CurrentValue);
 
 	void _SetCameraParamDouble(string NodeName, double Value);
@@ -66,7 +68,25 @@ private:
 	bool _IsStreamStart=false;
 	bool _isInitialized = false;
 	void _LoadConfig();
+	void _SaveConfig();
 	bool _isNumeric(std::string str);
+
+	/// <summary>
+	/// 需要組合指令
+	/// </summary>
+	/// <param name="NodeName"></param>
+	/// <param name="Value"></param>
+	/// <returns></returns>
+	bool _IsSpecialCommand(string NodeName, string Value);
+
+	/// <summary>
+	/// 需要組合指令
+	/// </summary>
+	/// <param name="NodeName"></param>
+	/// <param name="Value"></param>
+	/// <returns></returns>
+	bool _IsSpecialReturnValue(string NodeName, string Value);
+
 	std::vector<std::string> _split(const std::string& str, const std::string& pattern);
 
 	map<string, string> _mapParam;
@@ -74,6 +94,8 @@ private:
 
 
 #pragma region 對應ARENA 的使用方式建表
+	std::vector<string> _ParamKey_OffenRepeatKey{"BalanceRatioSelector","BalanceRatio"};// 切換模式所下的指令 不需要存留值
+
 
 	std::vector<string> _ParamKey_ValueIsDouble{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","ExposureAutoDamping","Gain","BlackLevel","Gamma","BalanceRatio"};
 
@@ -88,6 +110,8 @@ private:
 		"GevSCPSDoNotFragment","LineInverter","VoltageExternalEnable","UserOutputValue","ChunkEnable","MultipleROIRowsEnable","ReverseX","ReverseY","GammaEnable","SharpeningEnable",
 		"AwbAOIEnable","LUTEnable","DefectCorrectionEnable","ShadingCorrectionEnable","AutoExposureAOIEnable","ChunkModeActive","BalanceWhiteEnable"};
 
+
+	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue" };
 #pragma endregion
 
 };

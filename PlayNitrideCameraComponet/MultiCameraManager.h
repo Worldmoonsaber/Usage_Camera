@@ -18,6 +18,8 @@ namespace CameraManager
 	__declspec(dllexport)  void Grab(int cameraId, void*& imgPtr);
 
 	__declspec(dllexport)  void GetAllCameraNames(string strCameraNameArray[]);
+	__declspec(dllexport)  void GetCameraName(int cameraId, string& strCameraNameArray);
+
 
 	__declspec(dllexport)  void SetCameraParam(int cameraId, string NodeName, string Value);
 	__declspec(dllexport)  void GetCameraParam(int cameraId, string NodeName, string& Value);

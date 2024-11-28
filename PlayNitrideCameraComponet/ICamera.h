@@ -28,8 +28,8 @@ public:
 
 	string CameraName();
 	//-----目前還沒有想到很有效的機制 將Log訊息拋到 SubVi 這部分留到未來改進 暫時不進行規劃
-	void Save();
-	void Load();
+	virtual void Save();
+	virtual void Load();
 protected:
 	string _strName; //繼承後可以被看到
 

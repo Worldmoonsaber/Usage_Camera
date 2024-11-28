@@ -63,6 +63,9 @@ int main()
     cv:waitKey(0);
     //free(ptr);
 
+    CameraManager::SaveCurrentCameraParam(0);
+
+
     CameraManager::AcquisitionStop(0);
 
 }

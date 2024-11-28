@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ArenaCameraObject.h" />
+    <ClInclude Include="CameraComponentForLabview.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="MultiCameraManager.h" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArenaCameraObject.cpp" />
+    <ClCompile Include="CameraComponentForLabview.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="MultiCameraManager.cpp" />

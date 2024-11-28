@@ -122,7 +122,7 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 		{
 
 			//---------------------------------之後再優化
-			double val=atof(Value.c_str());
+			double val = atof(Value.c_str());
 			double dVal = atof(strVal.c_str());
 			double diff = abs(val - dVal);
 
@@ -132,7 +132,7 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 				return;
 			}
 
-			if (NodeName == "ExposureTime" && diff<10)
+			if (NodeName == "ExposureTime" && diff < 10)
 			{
 				_UpdateMap(NodeName, Value);
 				return;
@@ -190,7 +190,7 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 		const char* cNodeName = NodeName.c_str();
 		GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName);
 		Value = string(value);
-		_UpdateMap(NodeName,Value);
+		_UpdateMap(NodeName, Value);
 	}
 	catch (std::exception ex)
 	{
@@ -204,19 +204,44 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 
 void ArenaCameraObject::_UpdateMap(string NodeName, string Value)
 {
+	if (count(_ParamKey_OffenRepeatKey.begin(), _ParamKey_OffenRepeatKey.end(), NodeName))
+		return;
+
 	if (_mapParam.find(NodeName) == _mapParam.end())
 		_mapParam.insert(pair<string, string>(NodeName, Value));
 	else
 		_mapParam[NodeName] = Value;
 }
 
-bool ArenaCameraObject::_IsParamInMap(string NodeName, string& CurrentValue)
+void ArenaCameraObject::_CreateMap(string NodeName, string Value)
 {
+	if (count(_ParamKey_OffenRepeatKey.begin(), _ParamKey_OffenRepeatKey.end(), NodeName))
+		return;
 
 	if (_mapParam.find(NodeName) == _mapParam.end())
-		return false;	
+		_mapParam.insert(pair<string, string>(NodeName, Value));
 	else
-		CurrentValue=_mapParam[NodeName];
+	{
+		//-----重複值
+		_ParamKey_OffenRepeatKey.push_back(NodeName);
+	}
+
+
+
+}
+
+bool ArenaCameraObject::_IsParamInMap(string NodeName, string& CurrentValue)
+{
+	if (count(_ParamKey_OffenRepeatKey.begin(), _ParamKey_OffenRepeatKey.end(), NodeName))
+	{
+		CurrentValue = "";
+		return false;
+	}
+
+	if (_mapParam.find(NodeName) == _mapParam.end())
+		return false;
+	else
+		CurrentValue = _mapParam[NodeName];
 
 	return false;
 }
@@ -338,6 +363,7 @@ void ArenaCameraObject::AcquisitionStop()
 
 void ArenaCameraObject::Save()
 {
+	_SaveConfig();
 }
 
 void ArenaCameraObject::Load()
@@ -456,7 +482,7 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 
 void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 {
-		try
+	try
 	{
 		Arena::IImage* image = _Device->GetImage(2000);
 		int indx = image->GetFrameId();
@@ -527,7 +553,9 @@ void ArenaCameraObject::_LoadConfig()
 
 			if (vStr.size() >= 2)
 			{
+				_CreateMap(vStr[0], vStr[1]);
 				SetCameraParam(vStr[0], vStr[1]);
+				_vStringPm.push_back(tuple<string, string>(vStr[0], vStr[1]));
 			}
 		}
 		ifs.close();
@@ -540,7 +568,56 @@ void ArenaCameraObject::_LoadConfig()
 		write_file.open(strPath, std::ios::out);
 
 		write_file.close();
+
 	}
+
+
+}
+
+void ArenaCameraObject::_SaveConfig()
+{
+	string strPath;
+	char* buffer;
+
+	// Get the current working directory:
+	if ((buffer = _getcwd(NULL, 0)) != NULL)
+	{
+		strPath.assign(buffer, strlen(buffer));
+		free(buffer);
+	}
+
+	strPath = strPath + "\\config\\";
+
+	if (_access(strPath.c_str(), 0) == -1)
+		_mkdir(strPath.c_str());
+
+	strPath = strPath + _strName + ".txt";
+
+
+	fstream write_file;
+	//write_file.open(strPath+"__.txt", std::ios::out);
+
+	//std::cout << "\n" << "  Write "+ strPath + "__.txt" << "\n";
+
+	//if (write_file.is_open())
+	//{
+
+
+	//	for (int i = 0; i < _vStringPm.size(); i++)
+	//	{
+	//		if (count(_ParamKey_OffenRepeatKey.begin(), _ParamKey_OffenRepeatKey.end(), get<0>(_vStringPm[i])))
+	//		{
+	//			//-----依照條件選擇性寫入
+	//			write_file << get<0>(_vStringPm[i]) + ":" + get<1>(_vStringPm[i]) << "\n";
+	//		}
+	//		else
+	//		{
+
+	//		}
+	//	}
+	//	write_file.close();
+
+	//}
 }
 
 bool ArenaCameraObject::_isNumeric(std::string str)
@@ -565,6 +642,56 @@ bool ArenaCameraObject::_isNumeric(std::string str)
 	}
 
 	return true;
+}
+
+bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
+{
+	if (count(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName))
+		return false;
+
+	if (Value == "GainRed")
+	{
+		SetCameraParam("BalanceRatioSelector", "Red");
+		SetCameraParam("BalanceRatio", Value);
+	}
+	else if (Value == "GainGreen")
+	{
+		SetCameraParam("BalanceRatioSelector", "Green");
+		SetCameraParam("BalanceRatio", Value);
+	}
+	else if (Value == "GainBlue")
+	{
+		SetCameraParam("BalanceRatioSelector", "Blue");
+		SetCameraParam("BalanceRatio", Value);
+	}
+
+
+
+	return false;
+}
+
+bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string Value)
+{
+	if (count(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName))
+		return false;
+
+	if (Value == "GainRed")
+	{
+		SetCameraParam("BalanceRatioSelector", "Red");
+		GetCameraParam("BalanceRatio", Value);
+	}
+	else if (Value == "GainGreen")
+	{
+		SetCameraParam("BalanceRatioSelector", "Green");
+		GetCameraParam("BalanceRatio", Value);
+	}
+	else if (Value == "GainBlue")
+	{
+		SetCameraParam("BalanceRatioSelector", "Blue");
+		GetCameraParam("BalanceRatio", Value);
+	}
+
+	return false;
 }
 
 std::vector<std::string> ArenaCameraObject::_split(const std::string& str, const std::string& pattern)

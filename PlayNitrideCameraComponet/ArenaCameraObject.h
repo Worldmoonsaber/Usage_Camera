@@ -41,16 +41,17 @@ private:
 	std::mutex _mtx_SetParam;
 	std::mutex _mtx_GetParam;
 
+	void _UpdateMap(string NodeName, string Value);
+	bool _IsParamInMap(string NodeName, string& CurrentValue);
 
+	void _SetCameraParamDouble(string NodeName, double Value);
+	void _GetCameraParamDouble(string NodeName, double& Value);
 
-	void SetCameraParamDouble(string NodeName, double Value);
-	void GetCameraParamDouble(string NodeName, double& Value);
+	void _SetCameraParamInt(string NodeName, int Value);
+	void _GetCameraParamInt(string NodeName, int& Value);
 
-	void SetCameraParamInt(string NodeName, int Value);
-	void GetCameraParamInt(string NodeName, int& Value);
-
-	void SetCameraParamBool(string NodeName, bool Value);
-	void GetCameraParamBool(string NodeName, bool& Value);
+	void _SetCameraParamBool(string NodeName, bool Value);
+	void _GetCameraParamBool(string NodeName, bool& Value);
 
 	bool _IsCurrentWriteSpecialNode(string NodeName, string Value);
 	bool _IsCurrentReadSpecialNode(string NodeName, string& Value);
@@ -61,15 +62,16 @@ private:
 	void _GetImgPtr(unsigned int*& imgPtr);
 	void _GetImgPtr(void*& imgPtr);
 
-
 	Arena::ISystem* _pSystem;
 	bool _IsStreamStart=false;
 	bool _isInitialized = false;
 	void _LoadConfig();
-	bool _isNumeric(std::string const& str);
+	bool _isNumeric(std::string str);
 	std::vector<std::string> _split(const std::string& str, const std::string& pattern);
 
 	map<string, string> _mapParam;
+	vector<tuple<string, string>> _vStringPm;
+
 
 #pragma region 對應ARENA 的使用方式建表
 
@@ -84,7 +86,7 @@ private:
 
 	std::vector<string> _ParamKey_ValueIsBool{ "AcquisitionFrameRateEnable","ShortExposureEnable","ShortIntervalShutterEnable",
 		"GevSCPSDoNotFragment","LineInverter","VoltageExternalEnable","UserOutputValue","ChunkEnable","MultipleROIRowsEnable","ReverseX","ReverseY","GammaEnable","SharpeningEnable",
-		"AwbAOIEnable","LUTEnable","DefectCorrectionEnable","ShadingCorrectionEnable","AutoExposureAOIEnable","ChunkModeActive" };
+		"AwbAOIEnable","LUTEnable","DefectCorrectionEnable","ShadingCorrectionEnable","AutoExposureAOIEnable","ChunkModeActive","BalanceWhiteEnable"};
 
 #pragma endregion
 

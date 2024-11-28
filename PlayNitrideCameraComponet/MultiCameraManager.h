@@ -36,6 +36,21 @@ namespace CameraManager
 	__declspec(dllexport)  void LoadSavedCameraParam(int cameraId);
 
 
+
+	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, unsigned  int*& imgPtr);
+	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, void*& imgPtr);
+	__declspec(dllexport)  void SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string Value);
+	__declspec(dllexport)  void GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string& Value);
+
+	__declspec(dllexport)  void SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[]);
+	__declspec(dllexport)  void GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[]);
+
+	__declspec(dllexport)  void AcquisitionStart_byCameraNickName(string strCameraNickname);
+	__declspec(dllexport)  void AcquisitionStop_byCameraNickName(string strCameraNickname);
+
+	__declspec(dllexport)  void SaveCurrentCameraParam_byCameraNickName(string strCameraNickname);
+	__declspec(dllexport)  void LoadSavedCameraParam_byCameraNickName(string strCameraNickname);
+
 }
 
 #pragma region CSharp 使用的對接口

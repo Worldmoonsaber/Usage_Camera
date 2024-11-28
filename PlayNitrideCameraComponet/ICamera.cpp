@@ -89,7 +89,7 @@ void ICamera::AcquisitionStop()
 
 string ICamera::CameraName()
 {
-	return "NoName";
+	return _strName;
 }
 
 void ICamera::Save()

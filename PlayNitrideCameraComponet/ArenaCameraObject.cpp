@@ -107,12 +107,42 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 {
 	try
 	{
+		string strVal;
+		GetCameraParam(NodeName, strVal);
+
+		if (strVal == Value)
+		{
+			_UpdateMap(NodeName, Value);
+			return;
+		}
+
 		//-----判斷是否為特殊字
 
 		if (_isNumeric(Value))
 		{
+
+			//---------------------------------之後再優化
+			double val=atof(Value.c_str());
+			double dVal = atof(strVal.c_str());
+			double diff = abs(val - dVal);
+
+			if (diff < 0.01) //視為相同
+			{
+				_UpdateMap(NodeName, Value);
+				return;
+			}
+
+			if (NodeName == "ExposureTime" && diff<10)
+			{
+				_UpdateMap(NodeName, Value);
+				return;
+			}
+
+			//----判斷有效位數 的數字是否相同
+
 			if (_IsCurrentWriteSpecialNode(NodeName, Value))
 			{
+				_UpdateMap(NodeName, Value);
 				return;
 			}
 		}
@@ -120,6 +150,8 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 		const char* cNodeName = NodeName.c_str();
 		const char* cValue = Value.c_str();
 		Arena::SetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName, cValue);
+
+		_UpdateMap(NodeName, Value);
 	}
 	catch (std::exception ex)
 	{
@@ -127,20 +159,26 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 	}
 	catch (GenICam::GenericException& ge)
 	{
-		std::cout << "\nGenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+		std::cout << "\n SetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
 	}
 }
 
 void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 {
-	//---看看map有沒有如果有直接吐map裡面的值 這樣比較有效率
+
+	if (_IsParamInMap(NodeName, Value))
+	{
+		//----如果本來就存在那就吐回這些值就好
+		return;
+	}
+
+	//---看看map有沒有這些特殊Key 如果有直接吐map裡面的值 這樣比較有效率
 	//if (NodeName == "Width")
 	//	Value = to_string(_Width);
 	//else if (NodeName == "Height")
 	//	Value = to_string(_Height);
 	//else if (NodeName == "Channels")
 	//	Value = to_string(_Channels);
-
 
 	try
 	{
@@ -152,6 +190,7 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 		const char* cNodeName = NodeName.c_str();
 		GenICam::gcstring value = Arena::GetNodeValue<GenICam::gcstring>(_Device->GetNodeMap(), cNodeName);
 		Value = string(value);
+		_UpdateMap(NodeName,Value);
 	}
 	catch (std::exception ex)
 	{
@@ -159,41 +198,90 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 	}
 	catch (GenICam::GenericException& ge)
 	{
-		std::cout << "\nGenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+		std::cout << "\n GetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
 	}
 }
 
-void ArenaCameraObject::SetCameraParamDouble(string NodeName, double Value)
+void ArenaCameraObject::_UpdateMap(string NodeName, string Value)
 {
-	const char* cNodeName = NodeName.c_str();
-	Arena::SetNodeValue<double>(_Device->GetNodeMap(), cNodeName, Value);
+	if (_mapParam.find(NodeName) == _mapParam.end())
+		_mapParam.insert(pair<string, string>(NodeName, Value));
+	else
+		_mapParam[NodeName] = Value;
 }
 
-void ArenaCameraObject::GetCameraParamDouble(string NodeName, double& Value)
+bool ArenaCameraObject::_IsParamInMap(string NodeName, string& CurrentValue)
 {
-	const char* cNodeName = NodeName.c_str();
-	Value = Arena::GetNodeValue<double>(_Device->GetNodeMap(), cNodeName);
+
+	if (_mapParam.find(NodeName) == _mapParam.end())
+		return false;	
+	else
+		CurrentValue=_mapParam[NodeName];
+
+	return false;
 }
 
-void ArenaCameraObject::SetCameraParamInt(string NodeName, int Value)
+void ArenaCameraObject::_SetCameraParamDouble(string NodeName, double Value)
 {
-	const char* cNodeName = NodeName.c_str();
-	Arena::SetNodeValue<int64_t>(_Device->GetNodeMap(), cNodeName, Value);
+	try
+	{
+		const char* cNodeName = NodeName.c_str();
+		Arena::SetNodeValue<double>(_Device->GetNodeMap(), cNodeName, Value);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		std::cout << "\n _SetCameraParamDouble  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+	}
 }
 
-void ArenaCameraObject::GetCameraParamInt(string NodeName, int& Value)
+void ArenaCameraObject::_GetCameraParamDouble(string NodeName, double& Value)
+{
+	try
+	{
+		const char* cNodeName = NodeName.c_str();
+		Value = Arena::GetNodeValue<double>(_Device->GetNodeMap(), cNodeName);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		std::cout << "\n  _GetCameraParamDouble GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+	}
+
+}
+
+void ArenaCameraObject::_SetCameraParamInt(string NodeName, int Value)
+{
+	try
+	{
+		const char* cNodeName = NodeName.c_str();
+		Arena::SetNodeValue<int64_t>(_Device->GetNodeMap(), cNodeName, Value);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		std::cout << "\n _SetCameraParamInt  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+	}
+}
+
+void ArenaCameraObject::_GetCameraParamInt(string NodeName, int& Value)
 {
 	const char* cNodeName = NodeName.c_str();
 	Value = Arena::GetNodeValue<int64_t>(_Device->GetNodeMap(), cNodeName);
 }
 
-void ArenaCameraObject::SetCameraParamBool(string NodeName, bool Value)
+void ArenaCameraObject::_SetCameraParamBool(string NodeName, bool Value)
 {
-	const char* cNodeName = NodeName.c_str();
-	Arena::SetNodeValue<bool>(_Device->GetNodeMap(), cNodeName, Value);
+	try
+	{
+		const char* cNodeName = NodeName.c_str();
+		Arena::SetNodeValue<bool>(_Device->GetNodeMap(), cNodeName, Value);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		std::cout << "\n _SetCameraParamBool  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+	}
+
 }
 
-void ArenaCameraObject::GetCameraParamBool(string NodeName, bool& Value)
+void ArenaCameraObject::_GetCameraParamBool(string NodeName, bool& Value)
 {
 	const char* cNodeName = NodeName.c_str();
 	Value = Arena::GetNodeValue<bool>(_Device->GetNodeMap(), cNodeName);
@@ -262,14 +350,14 @@ bool ArenaCameraObject::_IsCurrentWriteSpecialNode(string NodeName, string Value
 	if (std::find(_ParamKey_ValueIsDouble.begin(), _ParamKey_ValueIsDouble.end(), NodeName) != _ParamKey_ValueIsDouble.end())
 	{
 		double dVal = atof(Value.c_str());
-		SetCameraParamDouble(NodeName, dVal);
+		_SetCameraParamDouble(NodeName, dVal);
 		return true;
 	}
 
 	if (std::find(_ParamKey_ValueIsInt.begin(), _ParamKey_ValueIsInt.end(), NodeName) != _ParamKey_ValueIsInt.end())
 	{
 		int nVal = atoi(Value.c_str());
-		SetCameraParamInt(NodeName, nVal);
+		_SetCameraParamInt(NodeName, nVal);
 		return true;
 	}
 
@@ -280,7 +368,7 @@ bool ArenaCameraObject::_IsCurrentWriteSpecialNode(string NodeName, string Value
 		if (Value == "true" || Value == "1")
 			bVal = true;
 
-		SetCameraParamBool(NodeName, bVal);
+		_SetCameraParamBool(NodeName, bVal);
 		return true;
 	}
 
@@ -294,7 +382,7 @@ bool ArenaCameraObject::_IsCurrentReadSpecialNode(string NodeName, string& Value
 	if (std::find(_ParamKey_ValueIsDouble.begin(), _ParamKey_ValueIsDouble.end(), NodeName) != _ParamKey_ValueIsDouble.end())
 	{
 		double dVal;
-		GetCameraParamDouble(NodeName, dVal);
+		_GetCameraParamDouble(NodeName, dVal);
 		Value = to_string(dVal);
 		return true;
 	}
@@ -302,7 +390,7 @@ bool ArenaCameraObject::_IsCurrentReadSpecialNode(string NodeName, string& Value
 	if (std::find(_ParamKey_ValueIsInt.begin(), _ParamKey_ValueIsInt.end(), NodeName) != _ParamKey_ValueIsInt.end())
 	{
 		int nVal;
-		GetCameraParamInt(NodeName, nVal);
+		_GetCameraParamInt(NodeName, nVal);
 		Value = to_string(nVal);
 		return true;
 	}
@@ -310,7 +398,7 @@ bool ArenaCameraObject::_IsCurrentReadSpecialNode(string NodeName, string& Value
 	if (std::find(_ParamKey_ValueIsBool.begin(), _ParamKey_ValueIsBool.end(), NodeName) != _ParamKey_ValueIsBool.end())
 	{
 		bool bVal;
-		GetCameraParamBool(NodeName, bVal);
+		_GetCameraParamBool(NodeName, bVal);
 		Value = to_string(bVal);
 		return true;
 	}
@@ -409,6 +497,7 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 
 void ArenaCameraObject::_LoadConfig()
 {
+	_mapParam.clear();
 	//----需要讀取對應文檔進行設定 因為每台相機的功能不一樣 不可以統一設定 這樣會死人的     
 	string strPath;
 	char* buffer;
@@ -436,10 +525,10 @@ void ArenaCameraObject::_LoadConfig()
 		{
 			vector<string> vStr = _split(s, ":");
 
-			//cout << s << '\n';
-
 			if (vStr.size() >= 2)
+			{
 				SetCameraParam(vStr[0], vStr[1]);
+			}
 		}
 		ifs.close();
 
@@ -454,13 +543,28 @@ void ArenaCameraObject::_LoadConfig()
 	}
 }
 
-bool ArenaCameraObject::_isNumeric(std::string const& str)
+bool ArenaCameraObject::_isNumeric(std::string str)
 {
-	auto it = str.begin();
-	while (it != str.end() && std::isdigit(*it)) {
-		it++;
+	const char* charArr = str.c_str();
+	int dotCount = 0;
+
+	for (int i = 0; i < strlen(charArr); i++)
+	{
+		if (charArr[i] >= '0' && charArr[i] <= '9')
+			continue;
+		else if (charArr[i] == '.')
+		{
+			dotCount++;
+
+			if (dotCount > 1)
+				return false;
+		}
+		else
+			return false;
+
 	}
-	return !str.empty() && it == str.end();
+
+	return true;
 }
 
 std::vector<std::string> ArenaCameraObject::_split(const std::string& str, const std::string& pattern)

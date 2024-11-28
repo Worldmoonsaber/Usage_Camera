@@ -31,7 +31,7 @@ public:
 	void Save();
 	void Load();
 protected:
-	string _strName = "No Name"; //繼承後可以被看到
+	string _strName; //繼承後可以被看到
 
 private:
 	int _Width=5320;//測試用數值

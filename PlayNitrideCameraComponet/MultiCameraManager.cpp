@@ -11,6 +11,7 @@
 #include <opencv2/core/mat.hpp>
 
 
+static map<string, int> map_CameraName_Indx;
 static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 #pragma region Arena相機 共用物件
 static Arena::ISystem* _System; //同時只能存在一個必須放在外面 令其為static
@@ -31,13 +32,16 @@ void CameraManager::InitializeAllCamera()
 	for (int u = 0; u < _deviceInfos.size(); u++)
 	{
 		ArenaCameraObject* ACO =new ArenaCameraObject(_System,_deviceInfos[u]);
+
 		lstCamera.push_back(ACO);
+
+		map_CameraName_Indx.insert(pair<string, int>(ACO->CameraName(), lstCamera.size() - 1));
 	}
 
 #pragma endregion
 
-	ICamera* ic = new ICamera();
-	lstCamera.push_back(ic);
+//	ICamera* ic = new ICamera();
+//	lstCamera.push_back(ic);
 
 
 	cout << "已偵測相機數量: " << lstCamera.size() << endl;
@@ -179,6 +183,57 @@ void CameraManager::LoadSavedCameraParam(int cameraId)
 
 	lstCamera[cameraId]->Load();
 
+}
+
+void CameraManager::Grab_byCameraNickName(string strCameraNickname, unsigned int*& imgPtr)
+{
+	CameraManager::Grab(map_CameraName_Indx[strCameraNickname], imgPtr);
+}
+
+void CameraManager::Grab_byCameraNickName(string strCameraNickname, void*& imgPtr)
+{
+	CameraManager::Grab(map_CameraName_Indx[strCameraNickname], imgPtr);
+}
+
+void CameraManager::SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string Value)
+{
+	CameraManager::SetCameraParam(map_CameraName_Indx[strCameraNickname], NodeName,Value);
+}
+
+void CameraManager::GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string& Value)
+{
+	CameraManager::GetCameraParam(map_CameraName_Indx[strCameraNickname], NodeName, Value);
+
+}
+
+void CameraManager::SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[])
+{
+	CameraManager::SetCameraParam(map_CameraName_Indx[strCameraNickname], NodeName, Value);
+}
+
+void CameraManager::GetCameraParam_byCameraNickName(string strCameraNickname, string NodeName[], string Value[])
+{
+	CameraManager::GetCameraParam(map_CameraName_Indx[strCameraNickname], NodeName, Value);
+}
+
+void CameraManager::AcquisitionStart_byCameraNickName(string strCameraNickname)
+{
+	CameraManager::AcquisitionStart(map_CameraName_Indx[strCameraNickname]);
+}
+
+void CameraManager::AcquisitionStop_byCameraNickName(string strCameraNickname)
+{
+	CameraManager::AcquisitionStop(map_CameraName_Indx[strCameraNickname]);
+}
+
+void CameraManager::SaveCurrentCameraParam_byCameraNickName(string strCameraNickname)
+{
+	CameraManager::SaveCurrentCameraParam(map_CameraName_Indx[strCameraNickname]);
+}
+
+void CameraManager::LoadSavedCameraParam_byCameraNickName(string strCameraNickname)
+{
+	CameraManager::LoadSavedCameraParam(map_CameraName_Indx[strCameraNickname]);
 }
 
 

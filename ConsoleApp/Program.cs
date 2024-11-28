@@ -26,7 +26,7 @@ namespace ConsoleApp
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStart(0);
 
 
-            IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(3);
+            IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
 
             string strW,strH,strCh;
             ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width",out strW);

@@ -22,6 +22,11 @@ int main()
 
     CameraManager::GetAllCameraNames(strArr);
 
+    for (int i = 0; i < CameraManager::CameraCount(); i++)
+    {
+        cout << "camera name: " << strArr[i] << endl;
+    }
+
     
     CameraManager::AcquisitionStart(0);
 
@@ -43,15 +48,19 @@ int main()
     CameraManager::GetCameraParam(0, "Height", strVal);
     int Height = atoi(strVal.c_str());
 
+
+    CameraManager::SetCameraParam(0, "ExposureTime", "5000");
+
+
     unsigned int* ptr = (unsigned int*)malloc(Width * Height * 8 * channels); //必須先提供記憶大小
     CameraManager::Grab(0, ptr);
         
     Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
 
-    //resize(image_input, image_input, Size(532, 460));
-    ////imwrite("E://debug.bmp", image_input);
-    //imshow("debug", image_input);
-    //cv:waitKey(0);
+    resize(image_input, image_input, Size(532, 460));
+    //imwrite("E://debug.bmp", image_input);
+    imshow("debug", image_input);
+    cv:waitKey(0);
     //free(ptr);
 
     CameraManager::AcquisitionStop(0);

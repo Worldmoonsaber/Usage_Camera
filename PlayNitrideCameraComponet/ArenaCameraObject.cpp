@@ -6,6 +6,8 @@
 #include <io.h> // strlen
 #include <string> // strlen
 #include <chrono>
+#include <algorithm>
+
 
 // Arena::ISystem* pSystem 同時只能存在一個
 ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo device)
@@ -61,10 +63,14 @@ void ArenaCameraObject::Grab(unsigned int*& imgPtr)
 	catch (exception ex)
 	{
 		cout << ex.what() << endl;
+		std::string strGe(ex.what());
+		_icamera_upDateLog(strGe);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
+		std::string strGe(ge.what());
+		_icamera_upDateLog(strGe);
 	}
 
 	_mtx_Grab.unlock();
@@ -93,10 +99,14 @@ void ArenaCameraObject::Grab(void*& imgPtr)
 	catch (exception ex)
 	{
 		cout << ex.what() << endl;
+		std::string strGe(ex.what());
+		_icamera_upDateLog(strGe);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
+		std::string strGe(ge.what());
+		_icamera_upDateLog(strGe);
 	}
 
 	_mtx_Grab.unlock();
@@ -107,6 +117,10 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 {
 	try
 	{
+		if (_IsSpecialCommand(NodeName, Value))
+			return;
+
+
 		string strVal;
 		GetCameraParam(NodeName, strVal);
 
@@ -156,29 +170,31 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 	catch (std::exception ex)
 	{
 		cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
+		string log = "NodeName: " + NodeName + " Value :" + Value + " " + ex.what();
+		_icamera_upDateLog(log);
+
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n SetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+
+
+		std::string strGe(ge.what());
+		string log = " SetCameraParam GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + Value;
+		_icamera_upDateLog(log);
 	}
 }
 
 void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 {
-
 	if (_IsParamInMap(NodeName, Value))
 	{
 		//----如果本來就存在那就吐回這些值就好
 		return;
 	}
 
-	//---看看map有沒有這些特殊Key 如果有直接吐map裡面的值 這樣比較有效率
-	//if (NodeName == "Width")
-	//	Value = to_string(_Width);
-	//else if (NodeName == "Height")
-	//	Value = to_string(_Height);
-	//else if (NodeName == "Channels")
-	//	Value = to_string(_Channels);
+	if (_IsSpecialReturnValue(NodeName, Value))
+		return;
 
 	try
 	{
@@ -195,10 +211,18 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 	catch (std::exception ex)
 	{
 		cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
+
+		string log = "NodeName: " + NodeName + " Value :" + Value + " " + ex.what();
+		_icamera_upDateLog(log);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n GetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+
+		std::string strGe(ge.what());
+		string log = "GetCameraParam GenICam exception thrown: " + strGe+ "NodeName: " + NodeName + " Value : " + Value;
+		_icamera_upDateLog(log);
+
 	}
 }
 
@@ -256,6 +280,11 @@ void ArenaCameraObject::_SetCameraParamDouble(string NodeName, double Value)
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n _SetCameraParamDouble  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+
+		std::string strGe(ge.what());
+		string log = "_SetCameraParamDouble  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
+		_icamera_upDateLog(log);
+
 	}
 }
 
@@ -269,6 +298,11 @@ void ArenaCameraObject::_GetCameraParamDouble(string NodeName, double& Value)
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n  _GetCameraParamDouble GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+
+		std::string strGe(ge.what());
+		string log = "_GetCameraParamDouble  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
+		_icamera_upDateLog(log);
+
 	}
 
 }
@@ -283,6 +317,10 @@ void ArenaCameraObject::_SetCameraParamInt(string NodeName, int Value)
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n _SetCameraParamInt  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+
+		std::string strGe(ge.what());
+		string log = "_SetCameraParamInt  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
+		_icamera_upDateLog(log);
 	}
 }
 
@@ -302,6 +340,10 @@ void ArenaCameraObject::_SetCameraParamBool(string NodeName, bool Value)
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n _SetCameraParamBool  GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + to_string(Value) << "\n";
+
+		std::string strGe(ge.what());
+		string log = "_SetCameraParamBool  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
+		_icamera_upDateLog(log);
 	}
 
 }
@@ -322,10 +364,19 @@ void ArenaCameraObject::Excute(string ExcuteCmd)
 	catch (std::exception ex)
 	{
 		cout << "ExcuteCmd: " + ExcuteCmd + " " + ex.what() << endl;
+
+		std::string strGe(ex.what());
+		string log = "ExcuteCmd: " + ExcuteCmd + " " + strGe;
+		_icamera_upDateLog(log);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << "ExcuteCmd: " + ExcuteCmd + " " + ge.what() << endl;
+
+		std::string strGe(ge.what());
+		string log = "ExcuteCmd: " + ExcuteCmd + " " + strGe;
+		_icamera_upDateLog(log);
+
 	}
 }
 
@@ -474,6 +525,8 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
+		std::string strGe(ge.what());
+		_icamera_upDateLog(strGe);
 	}
 	catch (...)
 	{
@@ -514,6 +567,10 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
+
+		std::string strGe(ge.what());
+		_icamera_upDateLog(strGe);
+
 	}
 	catch (...)
 	{
@@ -646,23 +703,31 @@ bool ArenaCameraObject::_isNumeric(std::string str)
 
 bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
 {
-	if (count(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName))
-		return false;
+	//if (count(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName))
+	//	return false;
 
-	if (Value == "GainRed")
+	if (NodeName == "GainRed")
 	{
 		SetCameraParam("BalanceRatioSelector", "Red");
 		SetCameraParam("BalanceRatio", Value);
+		return true;
 	}
-	else if (Value == "GainGreen")
+	else if (NodeName == "GainGreen")
 	{
 		SetCameraParam("BalanceRatioSelector", "Green");
 		SetCameraParam("BalanceRatio", Value);
+		return true;
 	}
-	else if (Value == "GainBlue")
+	else if (NodeName == "GainBlue")
 	{
 		SetCameraParam("BalanceRatioSelector", "Blue");
 		SetCameraParam("BalanceRatio", Value);
+		return true;
+	}
+	else if (NodeName == "GainAll")
+	{
+		SetCameraParam("GainSelector", "All");
+		SetCameraParam("Gain", Value);
 	}
 
 
@@ -672,23 +737,44 @@ bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
 
 bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string Value)
 {
-	if (count(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName))
-		return false;
-
-	if (Value == "GainRed")
+	if (NodeName == "GainRed")
 	{
 		SetCameraParam("BalanceRatioSelector", "Red");
 		GetCameraParam("BalanceRatio", Value);
+		return true;
 	}
-	else if (Value == "GainGreen")
+	else if (NodeName == "GainGreen")
 	{
 		SetCameraParam("BalanceRatioSelector", "Green");
 		GetCameraParam("BalanceRatio", Value);
+		return true;
 	}
-	else if (Value == "GainBlue")
+	else if (NodeName == "GainBlue")
 	{
 		SetCameraParam("BalanceRatioSelector", "Blue");
 		GetCameraParam("BalanceRatio", Value);
+		return true;
+	}
+	else if (NodeName == "Channels")
+	{
+		GetCameraParam("PixelFormat", Value);
+
+		int val = 0;
+
+		if (Value == "Mono8")
+			val = 1;
+		else
+			val = 3;
+
+		_UpdateMap(NodeName, to_string(val));
+		return true;
+
+	}
+	else if (NodeName == "GainAll")
+	{
+		SetCameraParam("GainSelector", "All");
+		GetCameraParam("Gain", Value);
+		_UpdateMap(NodeName, Value);
 	}
 
 	return false;

@@ -18,6 +18,8 @@ namespace CameraManager
 	__declspec(dllexport)  void Grab(int cameraId, void*& imgPtr);
 
 	__declspec(dllexport)  void GetAllCameraNames(string strCameraNameArray[]);
+	__declspec(dllexport)  void GetAllLog(string strLog[]);
+
 	__declspec(dllexport)  void GetCameraName(int cameraId, string& strCameraNameArray);
 
 
@@ -73,4 +75,5 @@ extern "C" __declspec(dllexport) void CSharp_GetAllCamera(const char** array);
 
 extern "C" __declspec(dllexport) void CSharp_FreeIntptrMemory(void* str);
 
+extern "C" __declspec(dllexport) void CSharp_GetErrorLog(const char** array);
 #pragma endregion

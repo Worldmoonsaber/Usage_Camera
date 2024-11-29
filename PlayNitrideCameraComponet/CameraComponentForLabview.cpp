@@ -56,6 +56,11 @@ void CameraManager_GetAllCamera(const char**& array)
 	CSharp_GetAllCamera(array);
 }
 
+void CameraManager_GetErrorLog(const char**& array)
+{
+	CSharp_GetErrorLog(array);
+}
+
 void CameraManager_GetCameraName(int cameraId, const char*& Name)
 {
 	string str;

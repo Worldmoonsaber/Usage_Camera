@@ -99,3 +99,14 @@ void ICamera::Save()
 void ICamera::Load()
 {
 }
+
+//void ICamera::UpdateLog(string str)
+//{
+//	vStringLog.push_back(str);
+//	
+//	if (vStringLog.size() > 100)
+//	{
+////		vStringLog.(0);
+//	}
+//
+//}

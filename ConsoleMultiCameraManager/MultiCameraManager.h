@@ -3,8 +3,8 @@
 #include <iostream>
 #include<fstream>
 
-#pragma comment(lib,"dll\\PlayNitrideCameraComponet.lib")
-
+//dll\\PlayNitrideCameraComponet.lib
+#pragma comment(lib,"C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib")
 using namespace std;
 
 namespace CameraManager
@@ -17,6 +17,10 @@ namespace CameraManager
 	__declspec(dllexport)  void Grab(int cameraId, void*& imgPtr);
 
 	__declspec(dllexport)  void GetAllCameraNames(string strCameraNameArray[]);
+	__declspec(dllexport)  void GetAllLog(string strLog[]);
+
+	__declspec(dllexport)  void GetCameraName(int cameraId, string& strCameraNameArray);
+
 
 	__declspec(dllexport)  void SetCameraParam(int cameraId, string NodeName, string Value);
 	__declspec(dllexport)  void GetCameraParam(int cameraId, string NodeName, string& Value);

@@ -21,32 +21,46 @@ namespace ConsoleApp
 
             string strVal;
             ConsoleApp.PlayNitrideCameraCoponent.GetAllCamera(out list);
-            ConsoleApp.PlayNitrideCameraCoponent.SetCameraParam(0, "Name", "Value");
-            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "TestNode", out strVal);
+            //ConsoleApp.PlayNitrideCameraCoponent.SetCameraParam(0, "Name", "Value");
+            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "TestNode", out strVal);
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStart(0);
 
 
-            IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
+            //IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
 
-            string strW,strH,strCh;
-            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width",out strW);
-            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Height", out strH);
-            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Channels", out strCh);
+            //string strW,strH,strCh;
+            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width",out strW);
+            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Height", out strH);
+            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Channels", out strCh);
 
-            int width = Convert.ToInt32(strW);   // 圖片寬度
-            int height = Convert.ToInt32(strH);  // 圖片高度
-            int stride = width * 3; // 每行的字節數（RGB 每像素 3 字節）
-            int channels=4;
+            //int width = Convert.ToInt32(strW);   // 圖片寬度
+            //int height = Convert.ToInt32(strH);  // 圖片高度
+            //int stride = width * 3; // 每行的字節數（RGB 每像素 3 字節）
+            //int channels=4;
 
-            unsafe
-            { //存檔測試
-                Bitmap bitmap = debug.CreateBitmapFromPointer(ImgPtr, width, height);
-            }
+            //unsafe
+            //{ //存檔測試
+            //    Bitmap bitmap = debug.CreateBitmapFromPointer(ImgPtr, width, height);
+            //}
 
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStop(0);
             
             
             ConsoleApp.PlayNitrideCameraCoponent.CloseAllCamera();
+
+            List<string> lstLog = new List<string>();
+            ConsoleApp.PlayNitrideCameraCoponent.GetAllLog(out lstLog);
+
+            Console.WriteLine("----- Show Log  -----");
+            Console.WriteLine("");
+
+            for (int i = 0; i < lstLog.Count; i++)
+            {
+                Console.WriteLine(lstLog[i]);
+
+            }
+
+            Console.ReadLine();
         }
     }
 

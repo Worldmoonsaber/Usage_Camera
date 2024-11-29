@@ -17,6 +17,7 @@ int main()
 
 
     CameraManager::InitializeAllCamera();
+    CameraManager::InitializeAllCamera();
 
     string strArr[20];
 
@@ -37,7 +38,7 @@ int main()
 
     int channels = 0;
 
-    if (strVal == "mono8")
+    if (strVal == "Mono8")
         channels = 1;
     else
         channels = 4;
@@ -47,15 +48,25 @@ int main()
 
     CameraManager::GetCameraParam(0, "Height", strVal);
     int Height = atoi(strVal.c_str());
+    
+
+    CameraManager::GetCameraParam(0, "Channels", strVal);
+    int Channels = atoi(strVal.c_str());
+
+    //CameraManager::SetCameraParam(0, "GainGreen", "5000");
 
 
-    CameraManager::SetCameraParam(0, "ExposureTime", "5000");
-
-
-    unsigned int* ptr = (unsigned int*)malloc(Width * Height * 8 * channels); //必須先提供記憶大小
+    unsigned int* ptr = (unsigned int*)malloc(Width * Height * Channels * channels); //必須先提供記憶大小
     CameraManager::Grab(0, ptr);
         
     Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
+
+    string strLog[100];
+    CameraManager::GetAllLog(strLog);
+
+    for(int u=0;u<strLog->size();u++)
+        cout << strLog[u] << endl;
+
 
     resize(image_input, image_input, Size(532, 460));
     //imwrite("E://debug.bmp", image_input);

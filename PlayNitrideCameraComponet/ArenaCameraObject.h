@@ -3,10 +3,6 @@
 #include "ICamera.h"
 #include "ArenaApi.h"
 #include "SaveApi.h"
-#include<fstream>
-#include<cstring>
-#include <map>
-#include <mutex>
 //#include "pch.h"
 
 using namespace std;
@@ -94,7 +90,7 @@ private:
 
 
 #pragma region 癸莱ARENA ㄏノよΑ
-	std::vector<string> _ParamKey_OffenRepeatKey{"BalanceRatioSelector","BalanceRatio"};// ち传家Α┮ ぃ惠璶痙
+	std::vector<string> _ParamKey_OffenRepeatKey{"BalanceRatioSelector","BalanceRatio","GainSelector"};// ち传家Α┮ ぃ惠璶痙
 
 
 	std::vector<string> _ParamKey_ValueIsDouble{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","ExposureAutoDamping","Gain","BlackLevel","Gamma","BalanceRatio"};
@@ -111,7 +107,9 @@ private:
 		"AwbAOIEnable","LUTEnable","DefectCorrectionEnable","ShadingCorrectionEnable","AutoExposureAOIEnable","ChunkModeActive","BalanceWhiteEnable"};
 
 
-	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue" };
+	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue","GainAll","Channels"};
+
+
 #pragma endregion
 
 };

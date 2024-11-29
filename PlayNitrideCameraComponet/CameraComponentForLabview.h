@@ -21,6 +21,9 @@ __declspec(dllexport) void CameraManager_FreeIntptrMemoryChar(unsigned  char* im
 
 __declspec(dllexport) void CameraManager_GetAllCamera(const char**& array);
 
+__declspec(dllexport) void CameraManager_GetErrorLog(const char**& array);
+
+
 __declspec(dllexport)  void CameraManager_GetCameraName(int cameraId, const char*& Name);
 
 

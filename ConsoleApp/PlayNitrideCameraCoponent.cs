@@ -12,8 +12,8 @@ namespace ConsoleApp
     {
 
         // C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll
-        const string dllPath = "dll\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
-
+        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
+        //dll\\PlayNitrideCameraComponet.dll
 
         #region Public
 
@@ -89,6 +89,33 @@ namespace ConsoleApp
 
         [DllImport(dllPath, EntryPoint = "CSharp_Grab", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Grab(int cameraId);
+
+
+        [DllImport(dllPath, EntryPoint = "CSharp_GetErrorLog", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void _GetAllLog([Out] IntPtr[] array);
+
+        public static void GetAllLog(out List<string> lstLog)
+        {
+            lstLog = new List<string>();
+
+            int length = 100;
+            IntPtr[] arrayPtrs = new IntPtr[length];
+
+            // 調用 C++ 填充字串指針
+            _GetAllLog(arrayPtrs);
+
+            // 解析字串
+            for (int i = 0; i < length; i++)
+            {
+                if (arrayPtrs[i] != IntPtr.Zero)
+                {
+                    string str = Marshal.PtrToStringAnsi(arrayPtrs[i]);
+                    lstLog.Add(str);
+                    FreeIntptrMemory(arrayPtrs[i]);
+                }
+            }
+
+        }
 
         #endregion
 

@@ -663,7 +663,21 @@ void ArenaCameraObject::_SaveConfig()
 	strPath = strPath + _strName + ".txt";
 
 
+	fstream write_file;
+	write_file.open(strPath, std::ios::out);
 
+	if (write_file.is_open())
+	{
+		map<string, string>::iterator it;
+		for (it = _mapParam.begin(); it != _mapParam.end(); ++it)
+		{
+			string str = it->first + ":" + it->second;
+			write_file << str << "\n";
+		}
+
+		write_file.close();
+
+	}
 }
 
 bool ArenaCameraObject::_isNumeric(std::string str)

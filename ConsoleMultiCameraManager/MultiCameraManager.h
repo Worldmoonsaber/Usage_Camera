@@ -4,7 +4,8 @@
 #include<fstream>
 
 //dll\\PlayNitrideCameraComponet.lib
-#pragma comment(lib,"C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib")
+#pragma comment(lib,"dll\\PlayNitrideCameraComponet.lib")
+//C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib
 using namespace std;
 
 namespace CameraManager

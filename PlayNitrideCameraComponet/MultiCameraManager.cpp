@@ -11,11 +11,48 @@
 #include <opencv2/core/mat.hpp>
 
 
+#pragma region 靜態物件
+
 static map<string, int> map_CameraName_Indx;
 static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 #pragma region Arena相機 共用物件
 static Arena::ISystem* _System; //同時只能存在一個必須放在外面 令其為static
 static bool _isArenaSystemOpened=false;
+
+#pragma endregion
+
+static string _StrSimulationFile;
+static cv::Mat _ImgSimulation;
+
+
+void _returnSimulationImg(void*& imgptr)
+{
+	if (_ImgSimulation.empty())
+		return;
+
+	int _Width = _ImgSimulation.size().width;
+	int _Height = _ImgSimulation.size().height;
+
+	uint8_t* data = new uint8_t[_Width * _Height * 4];
+
+	int count = 0;
+
+	for (int j = 0; j < _Height; j++)
+		for (int i = 0; i < _Width; i++)
+		{
+			cv::Vec4b pixel = _ImgSimulation.at<cv::Vec4b>(j, i);
+
+			data[count * 4] = pixel[0];     // B
+			data[count * 4 + 1] = pixel[1];   // G
+			data[count * 4 + 2] = pixel[2];   // R
+			data[count * 4 + 3] = pixel[3]; // A
+
+			count++;
+		}
+
+	imgptr = (unsigned int*)data;
+}
+
 #pragma endregion
 
 void CameraManager::InitializeAllCamera()
@@ -101,6 +138,9 @@ void CameraManager::Grab(int cameraId, void*& imgPtr)
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
 		_icamera_upDateLog("the Camera Index "+to_string(cameraId)+" Not Exist");
+
+		//------取得模擬影像
+		_returnSimulationImg(imgPtr);
 		return;
 	}
 
@@ -248,6 +288,21 @@ void CameraManager::LoadSavedCameraParam(int cameraId)
 
 	lstCamera[cameraId]->Load();
 
+}
+
+void CameraManager::SetSimulationImageSource(string strSourceFile)
+{
+	_StrSimulationFile = strSourceFile;
+
+	if (!_ImgSimulation.empty())
+		_ImgSimulation.release();
+
+	_ImgSimulation=cv::imread(_StrSimulationFile);
+
+	if(_ImgSimulation.channels()==1)
+		cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_GRAY2RGBA);
+	else if (_ImgSimulation.channels() == 3)
+		cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_RGB2RGBA);
 }
 
 void CameraManager::Grab_byCameraNickName(string strCameraNickname, unsigned int*& imgPtr)

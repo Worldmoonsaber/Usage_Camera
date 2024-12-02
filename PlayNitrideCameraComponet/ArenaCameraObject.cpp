@@ -6,8 +6,6 @@
 #include <io.h> // strlen
 #include <string> // strlen
 #include <chrono>
-#include <algorithm>
-
 
 // Arena::ISystem* pSystem 同時只能存在一個
 ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo device)
@@ -513,14 +511,20 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 			}
 		}
 
+		std::cout << "Get Img Ptr" << "\n";
+
+
 		size_t height = image->GetHeight();
 		size_t width = image->GetWidth();
 		size_t bits_per_pixel = image->GetBitsPerPixel();
 		size_t bytes_per_pixel = bits_per_pixel / 8;
 		size_t image_data_size_bytes = width * height * bytes_per_pixel;
+		std::cout << "Ptr  Size:" + to_string(image_data_size_bytes) << "\n";
 
 		memcpy(imgPtr, image->GetData(), image_data_size_bytes);
 		_Device->RequeueBuffer(image);
+		std::cout << "_Device->RequeueBuffer(image) Succeed." << "\n";
+
 	}
 	catch (GenICam::GenericException& ge)
 	{
@@ -554,6 +558,8 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 				return;
 			}
 		}
+		std::cout << "Get Img Ptr" << "\n";
+
 
 		size_t height = image->GetHeight();
 		size_t width = image->GetWidth();
@@ -561,8 +567,14 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 		size_t bytes_per_pixel = bits_per_pixel / 8;
 		size_t image_data_size_bytes = width * height * bytes_per_pixel;
 
+		std::cout << "Ptr  Size:"+ to_string(image_data_size_bytes) << "\n";
+
+
 		memcpy(imgPtr, image->GetData(), image_data_size_bytes);
 		_Device->RequeueBuffer(image);
+
+		std::cout << "_Device->RequeueBuffer(image) Succeed."<< "\n";
+
 	}
 	catch (GenICam::GenericException& ge)
 	{
@@ -651,30 +663,7 @@ void ArenaCameraObject::_SaveConfig()
 	strPath = strPath + _strName + ".txt";
 
 
-	fstream write_file;
-	//write_file.open(strPath+"__.txt", std::ios::out);
 
-	//std::cout << "\n" << "  Write "+ strPath + "__.txt" << "\n";
-
-	//if (write_file.is_open())
-	//{
-
-
-	//	for (int i = 0; i < _vStringPm.size(); i++)
-	//	{
-	//		if (count(_ParamKey_OffenRepeatKey.begin(), _ParamKey_OffenRepeatKey.end(), get<0>(_vStringPm[i])))
-	//		{
-	//			//-----依照條件選擇性寫入
-	//			write_file << get<0>(_vStringPm[i]) + ":" + get<1>(_vStringPm[i]) << "\n";
-	//		}
-	//		else
-	//		{
-
-	//		}
-	//	}
-	//	write_file.close();
-
-	//}
 }
 
 bool ArenaCameraObject::_isNumeric(std::string str)
@@ -728,6 +717,7 @@ bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
 	{
 		SetCameraParam("GainSelector", "All");
 		SetCameraParam("Gain", Value);
+		return true;
 	}
 
 
@@ -735,7 +725,7 @@ bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
 	return false;
 }
 
-bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string Value)
+bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string& Value)
 {
 	if (NodeName == "GainRed")
 	{
@@ -766,7 +756,11 @@ bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string Value)
 		else
 			val = 3;
 
-		_UpdateMap(NodeName, to_string(val));
+		std::cout << "\n" << "  Channels= " << to_string(val)<<" Value="<< Value << "\n";
+
+
+		Value = to_string(val);
+		_UpdateMap(NodeName, Value);
 		return true;
 
 	}
@@ -775,6 +769,8 @@ bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string Value)
 		SetCameraParam("GainSelector", "All");
 		GetCameraParam("Gain", Value);
 		_UpdateMap(NodeName, Value);
+		return true;
+
 	}
 
 	return false;

@@ -26,12 +26,12 @@ namespace ConsoleApp
             ConsoleApp.PlayNitrideCameraCoponent.AcquisitionStart(0);
 
 
-            //IntPtr ImgPtr=ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
+            IntPtr ImgPtr = ConsoleApp.PlayNitrideCameraCoponent.Grab(0);
 
-            //string strW,strH,strCh;
-            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width",out strW);
-            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Height", out strH);
-            //ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Channels", out strCh);
+            string strW, strH, strCh;
+            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Width", out strW);
+            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Height", out strH);
+            ConsoleApp.PlayNitrideCameraCoponent.GetCameraParam(0, "Channels", out strCh);
 
             //int width = Convert.ToInt32(strW);   // 圖片寬度
             //int height = Convert.ToInt32(strH);  // 圖片高度
@@ -57,7 +57,6 @@ namespace ConsoleApp
             for (int i = 0; i < lstLog.Count; i++)
             {
                 Console.WriteLine(lstLog[i]);
-
             }
 
             Console.ReadLine();

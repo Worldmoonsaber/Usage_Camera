@@ -39,6 +39,8 @@ namespace CameraManager
 	__declspec(dllexport)  void SaveCurrentCameraParam(int cameraId);
 	__declspec(dllexport)  void LoadSavedCameraParam(int cameraId);
 
+	__declspec(dllexport)  void SetSimulationImageSource(string strSourceFile);
+
 
 
 	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, unsigned  int*& imgPtr);

@@ -21,6 +21,14 @@ void CameraManager_Grab(int cameraId, unsigned int*& imgPtr)
 	CameraManager::Grab(cameraId,imgPtr);
 }
 
+void CameraManager_Grab(int cameraId, unsigned char*& imgPtr)
+{
+	void* imgPtrV= (void*)imgPtr;
+	CameraManager::Grab(cameraId, imgPtrV);
+	
+
+}
+
 void CameraManager_SetCameraParam(int cameraId, const char* NodeName, const char* Value)
 {
 	CameraManager::SetCameraParam(cameraId, NodeName, Value);
@@ -76,4 +84,9 @@ void CameraManager_SaveParam(int cameraId)
 void CameraManager_LoadParam(int cameraId)
 {
 	CameraManager::LoadSavedCameraParam(cameraId);
+}
+
+void CameraManager_SimulationImageSource(const char* strImageSource)
+{
+	CameraManager::SetSimulationImageSource(strImageSource);
 }

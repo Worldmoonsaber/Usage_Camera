@@ -81,7 +81,7 @@ private:
 	/// <param name="NodeName"></param>
 	/// <param name="Value"></param>
 	/// <returns></returns>
-	bool _IsSpecialReturnValue(string NodeName, string Value);
+	bool _IsSpecialReturnValue(string NodeName, string& Value);
 
 	std::vector<std::string> _split(const std::string& str, const std::string& pattern);
 

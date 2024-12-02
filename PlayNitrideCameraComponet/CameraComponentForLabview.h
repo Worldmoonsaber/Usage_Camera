@@ -8,6 +8,8 @@ __declspec(dllexport)  void CameraManager_CloseAllCamera();
 
 
 __declspec(dllexport)  void CameraManager_Grab(int cameraId, unsigned  int*& imgPtr);
+__declspec(dllexport)  void CameraManager_Grab(int cameraId, unsigned char*& imgPtr);
+
 
 __declspec(dllexport)  void CameraManager_SetCameraParam(int cameraId, const char* NodeName, const char* Value);
 __declspec(dllexport)  void CameraManager_GetCameraParam(int cameraId, const char* NodeName, const char*& Value);
@@ -30,3 +32,5 @@ __declspec(dllexport)  void CameraManager_GetCameraName(int cameraId, const char
 __declspec(dllexport)  void CameraManager_SaveParam(int cameraId);
 
 __declspec(dllexport)  void CameraManager_LoadParam(int cameraId);
+
+__declspec(dllexport)  void CameraManager_SimulationImageSource(const char* strImageSource);

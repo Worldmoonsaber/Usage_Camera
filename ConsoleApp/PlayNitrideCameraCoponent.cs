@@ -12,7 +12,7 @@ namespace ConsoleApp
     {
 
         // C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll
-        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
+        const string dllPath = "dll\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
         //dll\\PlayNitrideCameraComponet.dll
 
         #region Public

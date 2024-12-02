@@ -56,21 +56,21 @@ int main()
     //CameraManager::SetCameraParam(0, "GainGreen", "5000");
 
 
-    unsigned int* ptr = (unsigned int*)malloc(Width * Height * Channels * channels); //必須先提供記憶大小
+    void* ptr = (unsigned int*)malloc(Width * Height * Channels*8); //必須先提供記憶大小
     CameraManager::Grab(0, ptr);
         
-    Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
+    //Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
 
     string strLog[100];
     CameraManager::GetAllLog(strLog);
 
-    for(int u=0;u<strLog->size();u++)
-        cout << strLog[u] << endl;
+    //for(int u=0;u<strLog->size();u++)
+    //    cout << strLog[u] << endl;
 
 
-    resize(image_input, image_input, Size(532, 460));
+    //resize(image_input, image_input, Size(532, 460));
     //imwrite("E://debug.bmp", image_input);
-    imshow("debug", image_input);
+    //imshow("debug", image_input);
     cv:waitKey(0);
     //free(ptr);
 

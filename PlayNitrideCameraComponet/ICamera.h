@@ -19,7 +19,7 @@ public:
 	virtual void Initialize();
 	virtual void Close();
 
-	virtual void Grab(unsigned  int*& imgPtr);
+	virtual void Grab_Int(unsigned  int*& imgPtr);
 
 	virtual void Grab(void*& imgPtr);
 

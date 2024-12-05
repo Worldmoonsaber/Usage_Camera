@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -66,22 +67,53 @@ namespace ConsoleApp
 
     class debug
     {
-        public static unsafe Bitmap CreateBitmapFromPointer(IntPtr ptr, int width, int height)
+        public static unsafe Bitmap CreateBitmapFromPointer(IntPtr ptr, int width, int height,int channels)
         {
-            // 建立 Bitmap
-            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb);
+            PixelFormat format = PixelFormat.Format24bppRgb;
 
-            // 鎖定 Bitmap 的像素資料
-            BitmapData bitmapData = bitmap.LockBits(
-                new Rectangle(0, 0, width, height),
-                ImageLockMode.WriteOnly,
-                PixelFormat.Format32bppRgb);
 
-            // 將指標資料複製到 Bitmap
-            Buffer.MemoryCopy((void*)ptr, (void*)bitmapData.Scan0, width * height * 4, width * height * 4);
+            if (channels == 3)
+                format = PixelFormat.Format24bppRgb;
+            else if (channels == 4)
+                format = PixelFormat.Format32bppRgb;
+            else
+                format = PixelFormat.Format8bppIndexed;
 
-            // 解鎖 Bitmap
-            bitmap.UnlockBits(bitmapData);
+
+            int rowSize = width * channels;           // 每行像素數據大小
+            int padding = (4 - (rowSize % 4)) % 4;         // 計算填充字節數
+            int stride = rowSize + padding;               // 計算總步幅
+
+
+            Bitmap bitmap = new Bitmap(width, height, stride, format, ptr);
+
+
+            if (channels == 1)
+            {
+                //------創建新影像時調色盤會跑掉
+                ColorPalette palette = bitmap.Palette;
+
+                for (int i = 0; i < 256; i++)
+                    palette.Entries[i] = Color.FromArgb(i, i, i);
+
+                bitmap.Palette = palette;
+            }
+
+
+            //// 建立 Bitmap
+            //Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb);
+
+            //// 鎖定 Bitmap 的像素資料
+            //BitmapData bitmapData = bitmap.LockBits(
+            //    new Rectangle(0, 0, width, height),
+            //    ImageLockMode.WriteOnly,
+            //    PixelFormat.Format32bppRgb);
+
+            //// 將指標資料複製到 Bitmap
+            //Buffer.MemoryCopy((void*)ptr, (void*)bitmapData.Scan0, width * height * 4, width * height * 4);
+
+            //// 解鎖 Bitmap
+            //bitmap.UnlockBits(bitmapData);
 
             return bitmap;
         }

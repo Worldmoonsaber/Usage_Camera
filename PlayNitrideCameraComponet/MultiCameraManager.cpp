@@ -9,10 +9,13 @@
 #include<opencv2/imgproc/imgproc.hpp> //mophorlogical operation
 #include<opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
-
+#include <direct.h>
+#include <stdlib.h> // free, perror
+#include <stdio.h>  // printf
+#include <io.h> // strlen
+#include <chrono>
 
 #pragma region 靜態物件
-
 static map<string, int> map_CameraName_Indx;
 static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 #pragma region Arena相機 共用物件
@@ -85,12 +88,12 @@ void CameraManager::InitializeAllCamera()
 	}
 	catch (exception ex)
 	{
-		_icamera_upDateLog(ex.what());
+		WriteLog(ex.what());
 	}
 
 #pragma endregion
 
-	_icamera_upDateLog("已偵測相機數量: " + to_string(lstCamera.size()));
+	WriteLog("已偵測相機數量: " + to_string(lstCamera.size()));
 
 	cout << "已偵測相機數量: " << lstCamera.size() << endl;
 }
@@ -126,11 +129,13 @@ void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
 		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		_returnSimulationImg((void*&)imgPtr);
+
 		return;
 	}
 
 
-	lstCamera[cameraId]->Grab(imgPtr);
+	lstCamera[cameraId]->Grab((void*&)imgPtr);
 }
 
 void CameraManager::Grab(int cameraId, void*& imgPtr)
@@ -168,11 +173,16 @@ void CameraManager::GetCameraName(int cameraId,string& strCameraNameArray)
 	}
 
 	strCameraNameArray = lstCamera[cameraId]->CameraName();
+
+	WriteLog("GetCameraName: " + to_string(cameraId) + ":" + strCameraNameArray);
+
 }
 
 
 void CameraManager::SetCameraParam(int cameraId, string NodeName, string Value)
 {
+	WriteLog("SetCameraParam: " + to_string(cameraId) + ":" + NodeName+":"+ Value);
+
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
 		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
@@ -185,20 +195,24 @@ void CameraManager::SetCameraParam(int cameraId, string NodeName, string Value)
 
 void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 {
+
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
 	lstCamera[cameraId]->GetCameraParam(NodeName, Value);
+
+	WriteLog("GetCameraParam: " + to_string(cameraId) + ":" + NodeName + ":" + Value);
+
 }
 
 void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value[])
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -217,7 +231,7 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName[], string Value
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -233,7 +247,7 @@ void CameraManager::AcquisitionStart(int cameraId)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -244,7 +258,7 @@ void CameraManager::AcquisitionStop(int cameraId)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -270,7 +284,7 @@ void CameraManager::SaveCurrentCameraParam(int cameraId)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -282,7 +296,7 @@ void CameraManager::LoadSavedCameraParam(int cameraId)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -297,12 +311,17 @@ void CameraManager::SetSimulationImageSource(string strSourceFile)
 	if (!_ImgSimulation.empty())
 		_ImgSimulation.release();
 
-	_ImgSimulation=cv::imread(_StrSimulationFile);
+	if ((_access(_StrSimulationFile.c_str(), 0)) != -1)
+	{
 
-	if(_ImgSimulation.channels()==1)
-		cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_GRAY2RGBA);
-	else if (_ImgSimulation.channels() == 3)
-		cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_RGB2RGBA);
+
+		_ImgSimulation = cv::imread(_StrSimulationFile);
+
+		if (_ImgSimulation.channels() == 1)
+			cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_GRAY2RGBA);
+		else if (_ImgSimulation.channels() == 3)
+			cv::cvtColor(_ImgSimulation, _ImgSimulation, cv::COLOR_RGB2RGBA);
+	}
 }
 
 void CameraManager::Grab_byCameraNickName(string strCameraNickname, unsigned int*& imgPtr)
@@ -382,9 +401,30 @@ void* CSharp_Grab(int cameraId)
 	CameraManager::GetCameraParam(0, "Height", strVal);
 	int Height = atoi(strVal.c_str());
 
-	unsigned int* ptr = (unsigned int*)malloc(Width * Height * 8 * channels); //必須先提供記憶大小
+	void* ptr = malloc(Width * Height * 8 * channels); //必須先提供記憶大小
 		
 	CameraManager::Grab(cameraId, ptr);
+
+	//if (channels == 1)
+	//{
+	//	uint8_t* data = new uint8_t[Width * Height * 4];
+
+	//	int count = 0;
+	//	byte* bArr = (byte*)ptr;
+	//	for (int j = 0; j < Height; j++)
+	//		for (int i = 0; i < Width; i++)
+	//		{
+	//			data[count * 4] = bArr[count];     // B
+	//			data[count * 4 + 1] = bArr[count];   // G
+	//			data[count * 4 + 2] = bArr[count];   // R
+	//			data[count * 4 + 3] = 0; // A
+
+	//			count++;
+	//		}
+
+	//	CSharp_FreeIntptrMemory(ptr);
+	//	return bArr;
+	//}
 
 	return ptr;
 }

@@ -20,8 +20,9 @@ void ICamera::Close()
 	cout << "ICamera Close" << endl;
 }
 
-void ICamera::Grab(unsigned int*& imgPtr)
+void ICamera::Grab_Int(unsigned int*& imgPtr)
 {
+	/*
 	cv::Mat chipImg = cv::imread("C:\\Image\\4X4\\1836\\183601.bmp");
 
 	_Width = chipImg.size().width;
@@ -48,6 +49,7 @@ void ICamera::Grab(unsigned int*& imgPtr)
 		}
 
 	imgPtr = (unsigned int*)data;
+	*/
 }
 
 

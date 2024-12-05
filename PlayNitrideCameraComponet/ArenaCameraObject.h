@@ -17,7 +17,7 @@ public:
 	void Initialize();
 	void Close();
 
-	void Grab(unsigned int*& imgPtr);
+	void Grab_Int(unsigned int*& imgPtr);
 	void Grab(void*& imgPtr);
 
 	void SetCameraParam(string NodeName, string Value);

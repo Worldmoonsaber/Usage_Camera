@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include<fstream>
-//#include "pch.h"
+#include <windows.h>
 
 
 using namespace std;
@@ -79,3 +79,23 @@ extern "C" __declspec(dllexport) void CSharp_FreeIntptrMemory(void* str);
 
 extern "C" __declspec(dllexport) void CSharp_GetErrorLog(const char** array);
 #pragma endregion
+
+
+/// <summary>
+/// Debug時使用
+/// </summary>
+/// <param name="message"></param>
+static void WriteLog(const std::string& message) {
+	std::ofstream logFile("log.txt", std::ios::app); // 以追加模式打開文件
+	if (logFile.is_open()) 
+	{
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond);
+
+		logFile <<str <<message << std::endl; // 寫入日誌內容並換行
+	}
+	else {
+		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
+	}
+}

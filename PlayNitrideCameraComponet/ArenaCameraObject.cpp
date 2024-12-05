@@ -12,9 +12,31 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 {
 	_deviceInfo = device;
 
-	_IsStreamStart = false;
 	_pSystem = pSystem;
 	_Device = _pSystem->CreateDevice(_deviceInfo);
+	_IsStreamStart = false;
+
+	try
+	{
+		//----目前還沒有有效的方法判斷是否Stream已經被開啟 只能先用此方式
+		_Device->StopStream();
+		//----如果已經 StartStream 再呼叫一次 相機會掛掉
+		//		StopStream 再呼叫一次只會出現例外
+	}
+	catch (exception ex)
+	{
+		cout << ex.what() << endl;
+		std::string strGe(ex.what());
+		_icamera_upDateLog(strGe);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		cout << ge.what() << endl;
+		std::string strGe(ge.what());
+		_icamera_upDateLog(strGe);
+	}
+
+
 	_strName = _deviceInfo.ModelName() + " " + _deviceInfo.SerialNumber();
 	_LoadConfig();
 }
@@ -39,7 +61,7 @@ void ArenaCameraObject::Close()
 
 }
 
-void ArenaCameraObject::Grab(unsigned int*& imgPtr)
+void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
 {
 	std::lock_guard<std::mutex> lock(_mtx_Grab);
 	try
@@ -765,13 +787,10 @@ bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string& Value)
 
 		int val = 0;
 
-		if (Value == "Mono8")
+		if (Value == "Mono8" || Value == "Mono16")
 			val = 1;
 		else
 			val = 3;
-
-		std::cout << "\n" << "  Channels= " << to_string(val)<<" Value="<< Value << "\n";
-
 
 		Value = to_string(val);
 		_UpdateMap(NodeName, Value);

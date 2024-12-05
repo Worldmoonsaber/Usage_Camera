@@ -1,9 +1,23 @@
 #include "CameraComponentForLabview.h"
 #include "MultiCameraManager.h"
 
-void CameraManager_InitializeAllCamera()
+
+bool CameraManager_DoInitialize(int* CameraCount)
 {
 	CameraManager::InitializeAllCamera();
+	CameraCount[0] = CameraManager::CameraCount();
+
+	WriteLog("CameraCount :"+to_string(CameraCount[0]));
+
+	if (CameraCount [0]> 0)
+		return true;
+	else
+		return false;
+}
+
+void CameraManager_UnInitialize()
+{
+	CameraManager::CloseAllCamera();
 }
 
 int CameraManager_CameraCount()
@@ -11,32 +25,40 @@ int CameraManager_CameraCount()
 	return CameraManager::CameraCount();
 }
 
+void CameraManager_InitializeAllCamera()
+{
+	CameraManager::InitializeAllCamera();
+}
+
+
 void CameraManager_CloseAllCamera()
 {
 	return CameraManager::CloseAllCamera();
 }
 
-void CameraManager_Grab(int cameraId, unsigned int*& imgPtr)
+void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 {
 	CameraManager::Grab(cameraId,imgPtr);
 }
 
-void CameraManager_Grab(int cameraId, unsigned char*& imgPtr)
+void CameraManager_Grab_Char(int cameraId, unsigned char* imgPtr)
 {
 	void* imgPtrV= (void*)imgPtr;
 	CameraManager::Grab(cameraId, imgPtrV);
-	
-
 }
 
-void CameraManager_SetCameraParam(int cameraId, const char* NodeName, const char* Value)
+bool CameraManager_SetCameraParam(int cameraId, char* NodeName,char* Value)
 {
 	CameraManager::SetCameraParam(cameraId, NodeName, Value);
+	return true;
 }
 
-void CameraManager_GetCameraParam(int cameraId, const char* NodeName, const char*& Value)
+void CameraManager_GetCameraParam(int cameraId,char* NodeName,char* Value)
 {
-	Value=CSharp_GetCameraParam(cameraId,NodeName);
+	const char* cChar=CSharp_GetCameraParam(cameraId,NodeName);
+
+	std::strcpy(Value, cChar); // 複製內容到緩衝區
+
 }
 
 void CameraManager_AcquisitionStart(int cameraId)
@@ -59,21 +81,11 @@ void CameraManager_FreeIntptrMemoryChar(unsigned char* imgPtr)
 	CameraManager::FreeIntptrMemoryChar(imgPtr);
 }
 
-void CameraManager_GetAllCamera(const char**& array)
-{
-	CSharp_GetAllCamera(array);
-}
-
-void CameraManager_GetErrorLog(const char**& array)
-{
-	CSharp_GetErrorLog(array);
-}
-
-void CameraManager_GetCameraName(int cameraId, const char*& Name)
+void CameraManager_GetCameraName(int cameraId, char* Name)
 {
 	string str;
 	CameraManager::GetCameraName(cameraId, str);
-	Name = str.c_str();
+	std::strcpy(Name, str.c_str()); // 複製內容到緩衝區
 }
 
 void CameraManager_SaveParam(int cameraId)
@@ -86,7 +98,9 @@ void CameraManager_LoadParam(int cameraId)
 	CameraManager::LoadSavedCameraParam(cameraId);
 }
 
-void CameraManager_SimulationImageSource(const char* strImageSource)
+void CameraManager_SimulationImageSource(char* chrArrImageSource)
 {
-	CameraManager::SetSimulationImageSource(strImageSource);
+	std::string strImg(chrArrImageSource); // 轉換為 std::string
+
+	CameraManager::SetSimulationImageSource(strImg);
 }

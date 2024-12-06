@@ -32,6 +32,8 @@ namespace CameraManager
 	__declspec(dllexport)  void AcquisitionStart(int cameraId);
 	__declspec(dllexport)  void AcquisitionStop(int cameraId);
 
+	__declspec(dllexport)  void ExcuteCmd(int cameraId, string Command);
+
 	__declspec(dllexport) void FreeIntptrMemoryInt(unsigned  int* imgPtr);
 	__declspec(dllexport) void FreeIntptrMemoryChar(unsigned  char* imgPtr);
 	__declspec(dllexport) void FreeIntptrMemoryImage(void* imgPtr);
@@ -66,6 +68,8 @@ extern "C" __declspec(dllexport)  void CSharp_CloseAllCamera();
 
 extern "C" __declspec(dllexport)  void* CSharp_Grab(int cameraId);
 
+extern "C" __declspec(dllexport)  void CSharp_ExcuteCmd(int cameraId, const char* Command);
+
 
 extern "C" __declspec(dllexport)  void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value);
 extern "C" __declspec(dllexport)  const char* CSharp_GetCameraParam(int cameraId, const char* NodeName);
@@ -78,6 +82,9 @@ extern "C" __declspec(dllexport) void CSharp_GetAllCamera(const char** array);
 extern "C" __declspec(dllexport) void CSharp_FreeIntptrMemory(void* str);
 
 extern "C" __declspec(dllexport) void CSharp_GetErrorLog(const char** array);
+
+extern "C" __declspec(dllexport) const char* CSharp_GetCurrntVersion();
+
 #pragma endregion
 
 

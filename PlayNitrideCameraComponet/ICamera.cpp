@@ -88,6 +88,14 @@ void ICamera::AcquisitionStop()
 	cout << "ICamera AcquisitionStop" << endl;
 }
 
+void ICamera::Excute(string strCmd)
+{
+	cout << "ICamera Excutr "+strCmd << endl;
+
+}
+
+
+
 
 string ICamera::CameraName()
 {

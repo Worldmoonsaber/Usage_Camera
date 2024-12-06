@@ -2,6 +2,7 @@
 
 
 //---------------≈Á√“
+__declspec(dllexport)  const char* CameraManager_GetCurrentVersion();
 
 __declspec(dllexport) bool CameraManager_DoInitialize(int* CameraCount);
 
@@ -17,6 +18,9 @@ __declspec(dllexport)  void CameraManager_AcquisitionStop(int cameraId);
 
 
 __declspec(dllexport)  void CameraManager_GetCameraName(int cameraId, char* Name);
+
+__declspec(dllexport)  void CameraManager_ExcuteCommand(int cameraId, char* Command);
+
 
 //---------------•º≈Á√“
 

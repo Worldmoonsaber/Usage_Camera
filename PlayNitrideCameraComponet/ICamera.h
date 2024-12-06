@@ -30,6 +30,9 @@ public:
 	virtual void AcquisitionStart();
 	virtual void AcquisitionStop();
 
+	virtual void Excute(string strCmd);
+
+
 	string CameraName();
 	//-----目前還沒有想到很有效的機制 將Log訊息拋到 SubVi 這部分留到未來改進 暫時不進行規劃
 	virtual void Save();

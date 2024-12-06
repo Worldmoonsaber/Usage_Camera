@@ -93,14 +93,15 @@ private:
 	std::vector<string> _ParamKey_OffenRepeatKey{"BalanceRatioSelector","BalanceRatio","GainSelector"};// 切換模式所下的指令 不需要存留值
 
 
-	std::vector<string> _ParamKey_ValueIsDouble{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","ExposureAutoDamping","Gain","BlackLevel","Gamma","BalanceRatio"};
+	std::vector<string> _ParamKey_ValueIsDouble{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","ExposureAutoDamping","Gain","BlackLevel","Gamma","BalanceRatio","ShadingCorrectionValue"};
 
 	std::vector<string> _ParamKey_ValueIsInt{
 		"DeviceLinkSelector","GevStreamChannelSelector",
 		"DeviceLinkThroughputReserve","DeviceStreamChannelSelector",
 		"Width","Height","AcquisitionFrameCount","AcquisitionBurstFrameCount","PacketResendWindowFrameCount","GevSCPSPacketSize","GevSCPD",
 		"ActionSelector","ActionGroupKey","ActionGroupMask","CounterValue","CounterDuration","OffsetX","OffsetY",
-		"DecimationHorizontal","DecimationVertical","TargetBrightness","DeviceStreamChannelPacketSize"};
+		"DecimationHorizontal","DecimationVertical","TargetBrightness","DeviceStreamChannelPacketSize","ShadingCorrectionCellWidth","ShadingCorrectionCellHeight","WidthMax","HeightMax",
+		"ShadingCorrectionNodeIndexY","ShadingCorrectionNodeIndexX"};
 
 	std::vector<string> _ParamKey_ValueIsBool{ "AcquisitionFrameRateEnable","ShortExposureEnable","ShortIntervalShutterEnable",
 		"GevSCPSDoNotFragment","LineInverter","VoltageExternalEnable","UserOutputValue","ChunkEnable","MultipleROIRowsEnable","ReverseX","ReverseY","GammaEnable","SharpeningEnable",

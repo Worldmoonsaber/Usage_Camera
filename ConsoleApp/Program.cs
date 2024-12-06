@@ -15,6 +15,10 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
+
+            string strCurrentVersion = "";
+            ConsoleApp.PlayNitrideCameraCoponent.GetCurrntVersion(out strCurrentVersion);
+            Console.WriteLine("Current Camera Manager Version:"+ strCurrentVersion);
             //ConsoleApp.PlayNitrideCameraCoponent.DllEntryTest();
             ConsoleApp.PlayNitrideCameraCoponent.InitializeAllCamera();
 

@@ -12,7 +12,7 @@ namespace ConsoleApp
     {
 
         // C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll
-        const string dllPath = "dll\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
+        const string dllPath = "C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.dll";  // 這裡的 DLL 應該是已經編譯好的 DLL 路徑
         //dll\\PlayNitrideCameraComponet.dll
 
         #region Public
@@ -78,6 +78,27 @@ namespace ConsoleApp
 
         #region 已確認 內容 功能測試 OK
 
+        public static void GetCurrntVersion(out string strVersion)
+        {
+            strVersion = "";
+            IntPtr ptrString=_GetCurrntVersion();
+
+            // 解析字串
+            if (ptrString != IntPtr.Zero)
+            {
+                strVersion = Marshal.PtrToStringAnsi(ptrString);
+                FreeIntptrMemory(ptrString);
+            }
+
+        }
+
+
+
+        [DllImport(dllPath, EntryPoint = "CSharp_GetCurrntVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr _GetCurrntVersion();
+
+
+
         [DllImport(dllPath, EntryPoint = "CSharp_GetAllCamera", CallingConvention = CallingConvention.Cdecl)]
         private static extern void _GetAllCamera([Out] IntPtr[] array);
 
@@ -117,16 +138,12 @@ namespace ConsoleApp
 
         }
 
-        #endregion
-
-
-        #region 待完善
-
-
-
+        [DllImport(dllPath, EntryPoint = "CSharp_ExcuteCmd", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ExcuteCmd(int cameraId, string Command);
 
 
         #endregion
+
     }
 }
 

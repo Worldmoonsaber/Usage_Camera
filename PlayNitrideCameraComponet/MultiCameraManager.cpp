@@ -265,6 +265,17 @@ void CameraManager::AcquisitionStop(int cameraId)
 	lstCamera[cameraId]->AcquisitionStop();
 }
 
+void CameraManager::ExcuteCmd(int cameraId, string Command)
+{
+	if (cameraId < 0 || cameraId >= lstCamera.size())
+	{
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		return;
+	}
+
+	lstCamera[cameraId]->Excute(Command);
+}
+
 void CameraManager::FreeIntptrMemoryInt(unsigned int* imgPtr)
 {
 	CSharp_FreeIntptrMemory((void*)imgPtr);
@@ -429,6 +440,11 @@ void* CSharp_Grab(int cameraId)
 	return ptr;
 }
 
+void CSharp_ExcuteCmd(int cameraId, const char* Command)
+{
+	CameraManager::ExcuteCmd(cameraId, Command);
+}
+
 void CSharp_SetCameraParam(int cameraId, const char* NodeName, const char* Value)
 {
 	CameraManager::SetCameraParam(cameraId, NodeName, Value);
@@ -493,6 +509,17 @@ void CSharp_GetErrorLog(const char** array)
 			array[i] = result;
 		}
 	}
+}
+
+const char* CSharp_GetCurrntVersion()
+{
+	string strVal = "1.0.0.0";
+	char* res = (char*)malloc(strVal.size() + 1);
+	strcpy(res, strVal.c_str());
+
+	return res;
+
+
 }
 
 #pragma endregion

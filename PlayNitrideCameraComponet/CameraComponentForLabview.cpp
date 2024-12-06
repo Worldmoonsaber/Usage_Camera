@@ -2,6 +2,11 @@
 #include "MultiCameraManager.h"
 
 
+const char* CameraManager_GetCurrentVersion()
+{
+	return CSharp_GetCurrntVersion();
+}
+
 bool CameraManager_DoInitialize(int* CameraCount)
 {
 	CameraManager::InitializeAllCamera();
@@ -86,6 +91,11 @@ void CameraManager_GetCameraName(int cameraId, char* Name)
 	string str;
 	CameraManager::GetCameraName(cameraId, str);
 	std::strcpy(Name, str.c_str()); // 複製內容到緩衝區
+}
+
+void CameraManager_ExcuteCommand(int cameraId, char* Command)
+{
+	CameraManager::ExcuteCmd(cameraId, Command);
 }
 
 void CameraManager_SaveParam(int cameraId)

@@ -15,7 +15,6 @@ using namespace cv;
 int main()
 {
 
-
     CameraManager::InitializeAllCamera();
     CameraManager::InitializeAllCamera();
 

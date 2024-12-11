@@ -204,7 +204,7 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 
 	lstCamera[cameraId]->GetCameraParam(NodeName, Value);
 
-	WriteLog("GetCameraParam: " + to_string(cameraId) + ":" + NodeName + ":" + Value);
+//	WriteLog("GetCameraParam: " + to_string(cameraId) + ":" + NodeName + ":" + Value);
 
 }
 
@@ -324,8 +324,6 @@ void CameraManager::SetSimulationImageSource(string strSourceFile)
 
 	if ((_access(_StrSimulationFile.c_str(), 0)) != -1)
 	{
-
-
 		_ImgSimulation = cv::imread(_StrSimulationFile);
 
 		if (_ImgSimulation.channels() == 1)
@@ -513,7 +511,7 @@ void CSharp_GetErrorLog(const char** array)
 
 const char* CSharp_GetCurrntVersion()
 {
-	string strVal = "1.0.0.0";
+	string strVal = "1.0.0.1";
 	char* res = (char*)malloc(strVal.size() + 1);
 	strcpy(res, strVal.c_str());
 

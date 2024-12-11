@@ -7,6 +7,22 @@
 #include <string> // strlen
 #include <chrono>
 
+void WriteLog(const std::string& message) {
+	std::ofstream logFile("camera_manager_log.txt", std::ios::app); // 以追加模式打開文件
+	if (logFile.is_open())
+	{
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond)+ ":" + to_string(st.wMilliseconds);
+		logFile << str << " " << message << std::endl; // 寫入日誌內容並換行
+	}
+	else 
+	{
+		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
+	}
+}
+
+
 // Arena::ISystem* pSystem 同時只能存在一個
 ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo device)
 {
@@ -36,7 +52,6 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 		_icamera_upDateLog(strGe);
 	}
 
-
 	_strName = _deviceInfo.ModelName() + " " + _deviceInfo.SerialNumber();
 	_LoadConfig();
 }
@@ -63,7 +78,6 @@ void ArenaCameraObject::Close()
 
 void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
 {
-	std::lock_guard<std::mutex> lock(_mtx_Grab);
 	try
 	{
 		//-----設定觸發模式
@@ -78,7 +92,7 @@ void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
 		auto t_end = std::chrono::high_resolution_clock::now();
 		double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
 
-		cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
+		//cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
 	}
 	catch (exception ex)
 	{
@@ -93,12 +107,11 @@ void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
 		_icamera_upDateLog(strGe);
 	}
 
-	_mtx_Grab.unlock();
 }
 
 void ArenaCameraObject::Grab(void*& imgPtr)
 {
-	std::lock_guard<std::mutex> lock(_mtx_Grab);
+	//std::lock_guard<std::mutex> lock(_mtx_Grab);
 
 	try
 	{
@@ -114,7 +127,7 @@ void ArenaCameraObject::Grab(void*& imgPtr)
 		auto t_end = std::chrono::high_resolution_clock::now();
 		double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
 
-		cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
+		//cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
 	}
 	catch (exception ex)
 	{
@@ -129,7 +142,7 @@ void ArenaCameraObject::Grab(void*& imgPtr)
 		_icamera_upDateLog(strGe);
 	}
 
-	_mtx_Grab.unlock();
+	//_mtx_Grab.unlock();
 
 }
 
@@ -230,14 +243,14 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 	}
 	catch (std::exception ex)
 	{
-		cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
+		//cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
 
 		string log = "NodeName: " + NodeName + " Value :" + Value + " " + ex.what();
 		_icamera_upDateLog(log);
 	}
 	catch (GenICam::GenericException& ge)
 	{
-		std::cout << "\n GetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
+		//std::cout << "\n GetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
 
 		std::string strGe(ge.what());
 		string log = "GetCameraParam GenICam exception thrown: " + strGe+ "NodeName: " + NodeName + " Value : " + Value;
@@ -506,18 +519,15 @@ bool ArenaCameraObject::_IsCurrentReadSpecialNode(string NodeName, string& Value
 	return false;
 }
 
-bool ArenaCameraObject::_IsNodeValueDouble(string str)
-{
-	return false;
-}
 
 void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 {
 	try
 	{
+		//ArenaCameraObject::_mtx_Grab.try_lock();
 		Arena::IImage* image = _Device->GetImage(2000);
 		int indx = image->GetFrameId();
-		std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
+		//std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
 
 		unsigned int retry_count = 0;
 		const unsigned int retry_count_max = 10;
@@ -532,8 +542,8 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 				return;
 			}
 		}
-
-		std::cout << "Get Img Ptr" << "\n";
+		//ArenaCameraObject::_mtx_Grab.unlock();
+		//std::cout << "Get Img Ptr" << "\n";
 
 
 		size_t height = image->GetHeight();
@@ -541,15 +551,16 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 		size_t bits_per_pixel = image->GetBitsPerPixel();
 		size_t bytes_per_pixel = bits_per_pixel / 8;
 		size_t image_data_size_bytes = width * height * bytes_per_pixel;
-		std::cout << "Ptr  Size:" + to_string(image_data_size_bytes) << "\n";
+		//std::cout << "Ptr  Size:" + to_string(image_data_size_bytes) << "\n";
 
 		memcpy(imgPtr, image->GetData(), image_data_size_bytes);
 		_Device->RequeueBuffer(image);
-		std::cout << "_Device->RequeueBuffer(image) Succeed." << "\n";
+		//std::cout << "_Device->RequeueBuffer(image) Succeed." << "\n";
 
 	}
 	catch (GenICam::GenericException& ge)
 	{
+		//ArenaCameraObject::_mtx_Grab.unlock();
 		cout << ge.what() << endl;
 		std::string strGe(ge.what());
 		_icamera_upDateLog(strGe);
@@ -565,7 +576,7 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 	{
 		Arena::IImage* image = _Device->GetImage(2000);
 		int indx = image->GetFrameId();
-		std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
+		//std::cout << "\n" << "  image->GetFrameId: " << indx << "\n";
 
 		unsigned int retry_count = 0;
 		const unsigned int retry_count_max = 10;
@@ -580,8 +591,7 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 				return;
 			}
 		}
-		std::cout << "Get Img Ptr" << "\n";
-
+		//std::cout << "Get Img Ptr" << "\n";
 
 		size_t height = image->GetHeight();
 		size_t width = image->GetWidth();
@@ -589,14 +599,12 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 		size_t bytes_per_pixel = bits_per_pixel / 8;
 		size_t image_data_size_bytes = width * height * bytes_per_pixel;
 
-		std::cout << "Ptr  Size:"+ to_string(image_data_size_bytes) << "\n";
-
+		//std::cout << "Ptr  Size:"+ to_string(image_data_size_bytes) << "\n";
 
 		memcpy(imgPtr, image->GetData(), image_data_size_bytes);
 		_Device->RequeueBuffer(image);
 
-		std::cout << "_Device->RequeueBuffer(image) Succeed."<< "\n";
-
+		//std::cout << "_Device->RequeueBuffer(image) Succeed."<< "\n";
 	}
 	catch (GenICam::GenericException& ge)
 	{

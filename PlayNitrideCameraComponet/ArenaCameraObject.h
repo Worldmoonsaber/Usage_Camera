@@ -53,7 +53,6 @@ private:
 
 	bool _IsCurrentWriteSpecialNode(string NodeName, string Value);
 	bool _IsCurrentReadSpecialNode(string NodeName, string& Value);
-	bool _IsNodeValueDouble(string str);
 	Arena::DeviceInfo _deviceInfo;
 	Arena::IDevice* _Device;
 
@@ -110,6 +109,8 @@ private:
 
 	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue","GainAll","Channels"};
 
+
+	std::vector<string> _ParamKey_NeedStopAcqWhenSet{ "PixelFormat" };
 
 #pragma endregion
 

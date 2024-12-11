@@ -14,8 +14,13 @@ using namespace cv;
 
 int main()
 {
+    std::thread::id threadId = std::this_thread::get_id();
 
-    CameraManager::InitializeAllCamera();
+    size_t threadHash = std::hash<std::thread::id>()(threadId);
+    std::string threadIdStr = std::to_string(threadHash);
+
+    cout << "threadId: " << threadIdStr << endl;
+
     CameraManager::InitializeAllCamera();
 
     string strArr[20];

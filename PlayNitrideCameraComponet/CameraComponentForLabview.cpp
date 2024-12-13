@@ -2,6 +2,7 @@
 #include "MultiCameraManager.h"
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 
 const char* CameraManager_GetCurrentVersion()
@@ -48,12 +49,13 @@ bool containsSubstring(const std::string& mainStr, const std::string& subStr) {
 	return mainStr.find(subStr) != std::string::npos;
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="cameraId"></param>
+/// <param name="imgPtr">不外部輸入,內部消化</param>
 void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 {
-	std::thread::id threadId = std::this_thread::get_id();
-
-	size_t threadHash = std::hash<std::thread::id>()(threadId);
-	std::string threadIdStr = std::to_string(threadHash);
 
 	string strVal;
 	CameraManager::GetCameraParam(cameraId, "Width", strVal);
@@ -65,11 +67,11 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 	CameraManager::GetCameraParam(cameraId, "Channels", strVal);
 	int Channels = atoi(strVal.c_str());
 
+
 	void* ptr = (void*)malloc(_Width * _Height * Channels * 8); //必須先提供記憶大小
 	
-	WriteLog("Thread ID: "+ threadIdStr +" cameraId :"+ to_string(cameraId)  +" CameraManager_Grab_Int : Start");
+	
 	CameraManager::Grab(cameraId, ptr);
-
 	int cvType = CV_8UC1;
 
 	if(Channels==3)
@@ -94,14 +96,10 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 		cv::cvtColor(img, image_output, cvCvtType);
 	else
 		img.copyTo(image_output);
-
-	std::string addressStr = std::to_string(reinterpret_cast<uintptr_t>(ptr));
-
-	WriteLog("Thread ID: " + threadIdStr + " cameraId :" + to_string(cameraId) + " Address:"+ addressStr);//<---無法同時存取 兩隻相機的影像 待釐清
+	
 	img.release(); //<--- 在Labview SubVi被呼叫時 無法有效釋放記憶體
 	delete[] (ptr);//<--- 這個方法才能有效釋放記憶體
 
-	WriteLog("Thread ID: " + threadIdStr + " cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Finished");
 
 }
 

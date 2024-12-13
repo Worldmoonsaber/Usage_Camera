@@ -93,11 +93,14 @@ extern "C" __declspec(dllexport) const char* CSharp_GetCurrntVersion();
 /// </summary>
 /// <param name="message"></param>
 static void WriteLog(const std::string& message) {
-	std::ofstream logFile("camera_manager_log.txt", std::ios::app); // 以追加模式打開文件
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+
+
+	std::ofstream logFile("camera_manager_log_"+ to_string(st.wMonth) + "-" + to_string(st.wDay) +".txt", std::ios::app); // 以追加模式打開文件
 	if (logFile.is_open()) 
 	{
-		SYSTEMTIME st;
-		GetLocalTime(&st);
 		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) +":" + to_string(st.wMilliseconds);
 
 		logFile <<str <<" " << message << std::endl; // 寫入日誌內容並換行

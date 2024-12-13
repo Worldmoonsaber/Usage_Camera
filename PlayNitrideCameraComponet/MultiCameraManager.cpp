@@ -111,11 +111,19 @@ void CameraManager::CloseAllCamera()
 	for (int i = 0; i < lstCamera.size(); i++)
 		lstCamera[i]->Close();
 
-	if (_isArenaSystemOpened)
+	//if (_isArenaSystemOpened)
+	//{
+	try
 	{
 		_isArenaSystemOpened = false;
 		Arena::CloseSystem(_System);
 	}
+	catch (exception ex)
+	{
+		_icamera_upDateLog(ex.what());
+
+	}
+	//}
 #pragma endregion Ãö³¬ Arena¬Û¾÷
 
 	lstCamera.clear();
@@ -511,7 +519,7 @@ void CSharp_GetErrorLog(const char** array)
 
 const char* CSharp_GetCurrntVersion()
 {
-	string strVal = "1.0.0.1";
+	string strVal = "1.0.0.2";
 	char* res = (char*)malloc(strVal.size() + 1);
 	strcpy(res, strVal.c_str());
 

@@ -17,6 +17,7 @@
 
 #include<fstream>
 #include<cstring>
+#include "MultiCameraManager.h"
 
 using std::cout;
 using namespace std;
@@ -24,83 +25,147 @@ using namespace Arena;
 using namespace cv;
 #define TAB "  "
 
-
-static void thread_WorkContent(void* ptr)
+void ImageGrabTest(int indx)
 {
-	Mat image_input(4600, 5320, CV_8UC3, ptr); // THIS IS THE INPUT IMAGE, POINTER TO DATA			
+	CameraManager::AcquisitionStart(indx);
 
-	resize(image_input, image_input, Size(532, 460));
+	string strVal;
+	CameraManager::GetCameraParam(indx, "Width", strVal);
+	int _Width = atoi(strVal.c_str());
 
-	imshow("debug", image_input);
+	CameraManager::GetCameraParam(indx, "Height", strVal);
+	int _Height = atoi(strVal.c_str());
+
+	CameraManager::GetCameraParam(indx, "Channels", strVal);
+	int _Channels = atoi(strVal.c_str());
+	void* ptr=nullptr;
+	while (true)
+	{
+		if(ptr!=nullptr)
+			delete[] ptr;
+
+		if (_Width == 0 || _Height == 0 || _Channels == 0)
+		{
+			std::thread::id threadId = std::this_thread::get_id();
+
+			size_t threadHash = std::hash<std::thread::id>()(threadId);
+			std::string threadIdStr = std::to_string(threadHash);
+
+			cout << " \n threadId: " << threadIdStr <<" \n" << endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			continue;
+		}
+
+		ptr = (void*)malloc(_Width * _Height * _Channels * 8); //必須先提供記憶大小
+
+		CameraManager::Grab(indx,ptr);
+
+		string str = "Camera " + to_string(indx);
+		namedWindow("Camera " + to_string(indx));
+
+		int cvType = CV_8UC1;
+
+		if (_Channels == 3)
+			cvType = CV_8UC3;
+		else if (_Channels == 4)
+			cvType = CV_8UC4;
+
+		cv::Mat img(_Width, _Height, cvType, ptr);
+
+		imshow(str,img);
+
+	}
+}
+
+void ImageGrab(int cameraId, unsigned int*& imgPtr)
+{
+	string strVal;
+	CameraManager::GetCameraParam(cameraId, "Width", strVal);
+	int _Width = atoi(strVal.c_str());
+
+	CameraManager::GetCameraParam(cameraId, "Height", strVal);
+	int _Height = atoi(strVal.c_str());
+
+	CameraManager::GetCameraParam(cameraId, "Channels", strVal);
+	int Channels = atoi(strVal.c_str());
+
+	void* ptr = (void*)malloc(_Width * _Height * Channels * 8); //必須先提供記憶大小
+
+	WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Start");
+	CameraManager::Grab(cameraId, ptr);
+
+	int cvType = CV_8UC1;
+
+	if (Channels == 3)
+		cvType = CV_8UC3;
+	else if (Channels == 4)
+		cvType = CV_8UC4;
+
+
+	cv::Mat img(_Width, _Height, cvType, ptr);
+	cv::Mat image_output(_Width, _Height, CV_8UC4, &imgPtr[0]);
+
+	CameraManager::GetCameraParam(0, "PixelFormat", strVal);
+
+	int cvCvtType = cv::ColorConversionCodes::COLOR_GRAY2BGRA;
+
+	if (Channels == 3)
+		cvCvtType = cv::ColorConversionCodes::COLOR_BGR2BGRA;
+
+	if (Channels != 4)
+		cv::cvtColor(img, image_output, cvCvtType);
+	else
+		img.copyTo(image_output);
+
+	std::string addressStr = std::to_string(reinterpret_cast<uintptr_t>(ptr));
+
+	WriteLog(" cameraId :" + to_string(cameraId) + " Address:" + addressStr);//<---無法同時存取 兩隻相機的影像 待釐清
+	img.release(); //<--- 在Labview SubVi被呼叫時 無法有效釋放記憶體
+	delete[](ptr);//<--- 這個方法才能有效釋放記憶體
+
+	WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Finished");
+
 }
 
 
-ArenaCameraObj* obj;
-
-int main()//int argc, char** argv
+void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 {
-	obj = new ArenaCameraObj();
-	obj->Initialize();
+	std::thread thr(ImageGrab, cameraId, imgPtr);
+	thr.join();
+}
 
-	//system("PAUSE");
-	
-	if (obj->DeviceInfos().size() == 0)
-	{
-		cout << "無法偵測到相機:\n" << endl;
-		system("PAUSE");
-		return 0;
-	}
+int main()
+{
 
-	while (true)
-	{
-		//選擇相機
-		cout << "請選擇相機編號:\n" << endl;
+	CameraManager::InitializeAllCamera();
 
-		int selectIndex = _getch()-48;
+	string strArr[20];
 
-		if (selectIndex == -21)
-		{
-			cout << "取消流程 程式結束 \n" << endl;
-			system("PAUSE");
-			return 0;
-		}
-		else if (selectIndex<0 || selectIndex> obj->DeviceInfos().size())
-		{
-			cout << "不存在的編號 \n" << endl;
-			obj->ConsolePrintDeviceInfo();
-		}
-		else
-		{
-			obj->SelectCameraId(selectIndex);
-			obj->AcquisitionStart();
-			break;
-		}
-	}
+	CameraManager::GetAllCameraNames(strArr);
+
+	thread thr = thread(ImageGrabTest,0);
+	thread thr1 = thread(ImageGrabTest, 1);
+
+	thr.join();
+	thr1.join();
 
 
-	while (true)
-	{
-		//選擇相機
-		cout << "任意鍵取像 ( Esc 鍵關閉流程)" << endl;
+	string strVal;
+	CameraManager::GetCameraParam(0, "Width", strVal);
+	int _Width = atoi(strVal.c_str());
 
-		int selectIndex = _getch() - 48;
+	CameraManager::GetCameraParam(0, "Height", strVal);
+	int _Height = atoi(strVal.c_str());
 
-		if (selectIndex == -21)
-		{
-			cout << "取消流程 程式結束 \n" << endl;
-			system("PAUSE");
-			return 0;
-		}
-		else 
-		{
-			unsigned int* ptr = (unsigned int*)malloc(5320 * 4600 * 8 * 4); //必須先提供記憶大小
-			obj->Grab(ptr);
+	CameraManager::GetCameraParam(0, "Channels", strVal);
+	int Channels = atoi(strVal.c_str());
 
+	unsigned int* ptr = (unsigned int*)malloc(_Width * _Height * 4 * 8); //必須先提供記憶大小
 
-		}
-	}
+	CameraManager_Grab_Int(0, ptr);
 
-	obj->AcquisitionStop();
-	obj->Close();
+	cv::Mat image_output(_Width, _Height, CV_8UC4, &ptr[0]);
+
+	//----測試取像是否還是正常
 	return 0;
 }

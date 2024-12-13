@@ -8,11 +8,13 @@
 #include <chrono>
 
 void WriteLog(const std::string& message) {
-	std::ofstream logFile("camera_manager_log.txt", std::ios::app); // 以追加模式打開文件
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+
+	std::ofstream logFile("camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件
 	if (logFile.is_open())
 	{
-		SYSTEMTIME st;
-		GetLocalTime(&st);
 		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond)+ ":" + to_string(st.wMilliseconds);
 		logFile << str << " " << message << std::endl; // 寫入日誌內容並換行
 	}
@@ -66,14 +68,13 @@ void ArenaCameraObject::Initialize()
 
 void ArenaCameraObject::Close()
 {
-	_pSystem->DestroyDevice(_Device);
-
 	if (_IsStreamStart)
 	{
 		_Device->StopStream();
 		_IsStreamStart = false;
 	}
 
+	_pSystem->DestroyDevice(_Device);
 }
 
 void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
@@ -432,9 +433,10 @@ void ArenaCameraObject::AcquisitionStart()
 		SetCameraParam("TriggerMode", "Off");
 
 		_Device->StartStream();
-		_IsStreamStart = true;
+		_IsStreamStart = true;//方案二 加入執行緒連續取像隨時準備吐出來
 	}
 }
+
 
 void ArenaCameraObject::AcquisitionStop()
 {

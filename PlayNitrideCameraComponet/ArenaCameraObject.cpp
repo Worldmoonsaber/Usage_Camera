@@ -436,7 +436,7 @@ void ArenaCameraObject::AcquisitionStart()
 		_IsStreamStart = true;//方案二 加入執行緒連續取像隨時準備吐出來
 	}
 }
-
+  
 
 void ArenaCameraObject::AcquisitionStop()
 {

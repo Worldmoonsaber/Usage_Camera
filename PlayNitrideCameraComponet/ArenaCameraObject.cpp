@@ -55,6 +55,12 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 	}
 
 	_strName = _deviceInfo.ModelName() + " " + _deviceInfo.SerialNumber();
+
+	string str = "Find Camera : " + _strName + "  IP ADDRESS:"+ string(_deviceInfo.IpAddressStr());
+
+	std::cout << "\n Find Camera : " << _strName << " IP ADDRESS: " + _deviceInfo.IpAddressStr() << "\n";
+	WriteLog(str);
+
 	_LoadConfig();
 }
 

@@ -14,6 +14,7 @@
 #include <stdio.h>  // printf
 #include <io.h> // strlen
 #include <chrono>
+#include "OmronCameraObject.h"
 
 #pragma region 靜態物件
 static map<string, int> map_CameraName_Indx;
@@ -92,6 +93,12 @@ void CameraManager::InitializeAllCamera()
 	}
 
 #pragma endregion
+
+
+#pragma region 初始化 Omron 相機
+	InitializeOmron(lstCamera);
+#pragma endregion
+
 
 	WriteLog("已偵測相機數量: " + to_string(lstCamera.size()));
 

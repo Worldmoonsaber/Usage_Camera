@@ -748,12 +748,47 @@ void ArenaCameraObject::_SaveConfig()
 
 	if (write_file.is_open())
 	{
-		map<string, string>::iterator it;
-		for (it = _mapParam.begin(); it != _mapParam.end(); ++it)
-		{
-			string str = it->first + ":" + it->second;
-			write_file << str << "\n";
-		}
+	
+		string strVal;
+
+		GetCameraParam("ExposureTime", strVal);
+		write_file << "ExposuretTime:" + strVal << "\n";
+
+		GetCameraParam("GainRed", strVal);
+		write_file << "GainRed:" + strVal << "\n";
+		GetCameraParam("GainGreen", strVal);
+		write_file << "GainGreen:" + strVal << "\n";
+		GetCameraParam("GainBlue", strVal);
+		write_file << "GainBlue:" + strVal << "\n";
+		GetCameraParam("GainAll", strVal);
+		write_file << "GainAll:" + strVal << "\n";
+		GetCameraParam("Gamma", strVal);
+		write_file << "Gamma:" + strVal << "\n";
+
+		GetCameraParam("Width", strVal);
+		write_file << "Width:" + strVal << "\n";
+
+		GetCameraParam("Height", strVal);
+		write_file << "Height:" + strVal << "\n";
+
+		GetCameraParam("GevSCPD", strVal);
+		write_file << "GevSCPD:" + strVal << "\n";
+		GetCameraParam("PixelFormat", strVal);
+		write_file << "PixelFormat:" + strVal << "\n";
+
+		GetCameraParam("ADCBitDepth", strVal);
+		write_file << "ADCBitDepth:" + strVal << "\n";
+		
+		GetCameraParam("DeviceStreamChannelPacketSize", strVal);
+		write_file << "DeviceStreamChannelPacketSize:" + strVal << "\n";
+		
+		GetCameraParam("DeviceLinkThroughputReserve", strVal);
+		write_file << "DeviceLinkThroughputReserve:" + strVal << "\n";
+
+		GetCameraParam("AcquisitionFrameRate", strVal);
+		write_file << "AcquisitionFrameRate:" + strVal << "\n";
+
+		
 
 		write_file.close();
 

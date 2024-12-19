@@ -91,6 +91,11 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 		cvCvtType = cv::ColorConversionCodes::COLOR_BGR2BGRA;
 	else if (Channels == 3 && containsSubstring(strVal, "RGB"))
 		cvCvtType = cv::ColorConversionCodes::COLOR_RGB2RGBA;
+	else if (Channels == 1 && containsSubstring(strVal, "BayerRG"))
+	{
+		cvCvtType = cv::ColorConversionCodes::COLOR_BayerRG2BGRA;
+	}
+
 
 	if (Channels != 4)
 		cv::cvtColor(img, image_output, cvCvtType);

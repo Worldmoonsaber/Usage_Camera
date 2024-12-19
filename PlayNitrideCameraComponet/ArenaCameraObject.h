@@ -39,7 +39,7 @@ private:
 	std::mutex _mtx_GetParam;
 
 
-
+	bool _containsSubstring(const std::string& mainStr, const std::string& subStr);
 	void _UpdateMap(string NodeName, string Value);
 	void _CreateMap(string NodeName, string Value);
 

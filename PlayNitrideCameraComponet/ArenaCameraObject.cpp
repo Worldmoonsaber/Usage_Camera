@@ -225,6 +225,48 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 	}
 }
 
+/*
+AcquisitionMode	Continuous
+AcquisitionStartMode	Normal
+AcquisitionFrameCount	1
+AcquisitionBurstFrameCount	1
+
+TriggerSelector	FrameStart
+TriggerSource	Software
+TriggerActivation	RisingEdge
+TriggerOverlap	Off
+TriggerDelay	0
+TriggerArmed
+ISPClockSpeed	Normal
+ShortExposureEnable	0
+ShortIntervalShutterEnable	0
+PacketResendWindowFrameCount	4
+GevStreamChannelSelector	0
+GevSCPSDoNotFragment	1
+GevSCPSPacketSize	9000
+GevSCPD	9800
+TimerSelector	Timer0
+PixelFormat	RGB8
+ADCBitDepth	Bits8
+Width	5320
+Height	4600
+OffsetX	0
+OffsetY	0
+MultipleROIRowsEnable	0
+ReverseX	0
+ReverseY	0
+BinningSelector	Digital
+GammaEnable	1
+Gamma	1
+SharpeningEnable	0
+DualADCMode	Off
+GradationCompressionMode	Off
+
+
+
+*/
+
+
 void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 {
 	if (_IsParamInMap(NodeName, Value))
@@ -777,6 +819,10 @@ bool ArenaCameraObject::_IsSpecialCommand(string NodeName, string Value)
 	return false;
 }
 
+bool ArenaCameraObject::_containsSubstring(const std::string& mainStr, const std::string& subStr) {
+	return mainStr.find(subStr) != std::string::npos;
+}
+
 bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string& Value)
 {
 	if (NodeName == "GainRed")
@@ -803,7 +849,7 @@ bool ArenaCameraObject::_IsSpecialReturnValue(string NodeName, string& Value)
 
 		int val = 0;
 
-		if (Value == "Mono8" || Value == "Mono16")
+		if (Value == "Mono8" || Value == "Mono16" || _containsSubstring(Value,"Bayer"))
 			val = 1;
 		else
 			val = 3;

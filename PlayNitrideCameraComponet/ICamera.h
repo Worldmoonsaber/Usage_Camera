@@ -53,17 +53,6 @@ private:
 static std::vector<string> _cameraManager_StringLog;
 static std::mutex _mtx_Log;
 
-static void _icamera_upDateLog(string str)
-{
-	//有Bug暫時不用 但保留接口
-	//std::lock_guard<std::mutex> lock(_mtx_Log);
-	//_cameraManager_StringLog.push_back(str);
-
-	//if (_cameraManager_StringLog.size() > 100)
-	//	_cameraManager_StringLog.erase(_cameraManager_StringLog.begin());
-
-	//_mtx_Log.unlock();
-}
 
 static void _icamera_getLog(string strLog[])
 {

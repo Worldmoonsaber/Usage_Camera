@@ -93,9 +93,6 @@ void CameraManager::InitializeAllCamera()
 
 #pragma endregion
 
-	WriteLog("已偵測相機數量: " + to_string(lstCamera.size()));
-
-	cout << "已偵測相機數量: " << lstCamera.size() << endl;
 }
 
 int CameraManager::CameraCount()
@@ -120,7 +117,7 @@ void CameraManager::CloseAllCamera()
 	}
 	catch (exception ex)
 	{
-		_icamera_upDateLog(ex.what());
+		WriteLog(ex.what());
 
 	}
 	//}
@@ -128,7 +125,7 @@ void CameraManager::CloseAllCamera()
 
 	lstCamera.clear();
 
-	_icamera_upDateLog("All Camera Closed");
+	WriteLog("All Camera Closed");
 
 }
 
@@ -136,7 +133,7 @@ void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		_returnSimulationImg((void*&)imgPtr);
 
 		return;
@@ -150,7 +147,7 @@ void CameraManager::Grab(int cameraId, void*& imgPtr)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index "+to_string(cameraId)+" Not Exist");
+		WriteLog("the Camera Index "+to_string(cameraId)+" Not Exist");
 
 		//------取得模擬影像
 		_returnSimulationImg(imgPtr);
@@ -176,13 +173,12 @@ void CameraManager::GetCameraName(int cameraId,string& strCameraNameArray)
 {
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
 	strCameraNameArray = lstCamera[cameraId]->CameraName();
 
-	WriteLog("GetCameraName: " + to_string(cameraId) + ":" + strCameraNameArray);
 
 }
 
@@ -193,7 +189,7 @@ void CameraManager::SetCameraParam(int cameraId, string NodeName, string Value)
 
 	if (cameraId < 0 || cameraId >= lstCamera.size())
 	{
-		_icamera_upDateLog("the Camera Index " + to_string(cameraId) + " Not Exist");
+		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
@@ -539,3 +535,50 @@ void CSharp_LoadDefaultParameter(int cameraId)
 
 
 #pragma endregion
+
+
+//bool isExistPath = false;
+//
+///// <summary>
+///// Debug時使用
+///// </summary>
+///// <param name="message"></param>
+//void WriteLog(const std::string& message) {
+//
+//	SYSTEMTIME st;
+//	GetLocalTime(&st);
+//
+//	if (!isExistPath)
+//	{
+//		string strPath;
+//		char* buffer;
+//
+//		// Get the current working directory:
+//		if ((buffer = _getcwd(NULL, 0)) != NULL)
+//		{
+//			strPath.assign(buffer, strlen(buffer));
+//			free(buffer);
+//		}
+//
+//		strPath = strPath + "\\Log\\";
+//
+//		if (_access(strPath.c_str(), 0) == -1)
+//		{
+//			_mkdir(strPath.c_str());
+//			isExistPath = true;
+//		}
+//		else
+//			isExistPath = true;
+//	}
+//
+//	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件
+//	if (logFile.is_open())
+//	{
+//		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) + ":" + to_string(st.wMilliseconds);
+//
+//		logFile << str << " " << message << std::endl; // 寫入日誌內容並換行
+//	}
+//	else {
+//		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
+//	}
+//}

@@ -91,7 +91,7 @@ void ImageGrab(int cameraId, unsigned int*& imgPtr)
 
 	void* ptr = (void*)malloc(_Width * _Height * Channels * 8); //必須先提供記憶大小
 
-	WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Start");
+	//WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Start");
 	CameraManager::Grab(cameraId, ptr);
 
 	int cvType = CV_8UC1;
@@ -119,11 +119,11 @@ void ImageGrab(int cameraId, unsigned int*& imgPtr)
 
 	std::string addressStr = std::to_string(reinterpret_cast<uintptr_t>(ptr));
 
-	WriteLog(" cameraId :" + to_string(cameraId) + " Address:" + addressStr);//<---無法同時存取 兩隻相機的影像 待釐清
+	//WriteLog(" cameraId :" + to_string(cameraId) + " Address:" + addressStr);//<---無法同時存取 兩隻相機的影像 待釐清
 	img.release(); //<--- 在Labview SubVi被呼叫時 無法有效釋放記憶體
 	delete[](ptr);//<--- 這個方法才能有效釋放記憶體
 
-	WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Finished");
+	//WriteLog(" cameraId :" + to_string(cameraId) + " CameraManager_Grab_Int : Finished");
 
 }
 

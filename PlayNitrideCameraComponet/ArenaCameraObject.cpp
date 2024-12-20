@@ -6,23 +6,24 @@
 #include <io.h> // strlen
 #include <string> // strlen
 #include <chrono>
+#include "MultiCameraManager.h"
 
-void WriteLog(const std::string& message) {
-
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-
-	std::ofstream logFile("camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 發家Αゴ秨ゅン
-	if (logFile.is_open())
-	{
-		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond)+ ":" + to_string(st.wMilliseconds);
-		logFile << str << " " << message << std::endl; // 糶ら粁ず甧传︽
-	}
-	else 
-	{
-		std::cerr << "Unable to open log file." << std::endl; // ゅンゴ秨ア毖ゴ岿粇
-	}
-}
+//void WriteLog(const std::string& message) {
+//
+//	SYSTEMTIME st;
+//	GetLocalTime(&st);
+//
+//	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 發家Αゴ秨ゅン
+//	if (logFile.is_open())
+//	{
+//		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond)+ ":" + to_string(st.wMilliseconds);
+//		logFile << str << " " << message << std::endl; // 糶ら粁ず甧传︽
+//	}
+//	else 
+//	{
+//		std::cerr << "Unable to open log file." << std::endl; // ゅンゴ秨ア毖ゴ岿粇
+//	}
+//}
 
 
 // Arena::ISystem* pSystem 
@@ -45,13 +46,13 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 	{
 		cout << ex.what() << endl;
 		std::string strGe(ex.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
 		std::string strGe(ge.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 
 	_strName = _deviceInfo.ModelName() + " " + _deviceInfo.SerialNumber();
@@ -105,20 +106,19 @@ void ArenaCameraObject::Grab_Int(unsigned int*& imgPtr)
 	{
 		cout << ex.what() << endl;
 		std::string strGe(ex.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
 		std::string strGe(ge.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 
 }
 
 void ArenaCameraObject::Grab(void*& imgPtr)
 {
-	//std::lock_guard<std::mutex> lock(_mtx_Grab);
 
 	try
 	{
@@ -140,16 +140,15 @@ void ArenaCameraObject::Grab(void*& imgPtr)
 	{
 		cout << ex.what() << endl;
 		std::string strGe(ex.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		cout << ge.what() << endl;
 		std::string strGe(ge.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 
-	//_mtx_Grab.unlock();
 
 }
 
@@ -211,17 +210,16 @@ void ArenaCameraObject::SetCameraParam(string NodeName, string Value)
 	{
 		cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
 		string log = "NodeName: " + NodeName + " Value :" + Value + " " + ex.what();
-		_icamera_upDateLog(log);
+		WriteLog(log);
 
 	}
 	catch (GenICam::GenericException& ge)
 	{
 		std::cout << "\n SetCameraParam GenICam exception thrown: " << ge.what() << "NodeName: " + NodeName + " Value : " + Value << "\n";
 
-
 		std::string strGe(ge.what());
 		string log = " SetCameraParam GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + Value;
-		_icamera_upDateLog(log);
+		WriteLog(log);
 	}
 }
 
@@ -295,7 +293,7 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 		//cout << "NodeName: " + NodeName + " Value :" + Value + " " + ex.what() << endl;
 
 		string log = "NodeName: " + NodeName + " Value :" + Value + " " + ex.what();
-		_icamera_upDateLog(log);
+		WriteLog(log);
 	}
 	catch (GenICam::GenericException& ge)
 	{
@@ -303,7 +301,7 @@ void ArenaCameraObject::GetCameraParam(string NodeName, string& Value)
 
 		std::string strGe(ge.what());
 		string log = "GetCameraParam GenICam exception thrown: " + strGe+ "NodeName: " + NodeName + " Value : " + Value;
-		_icamera_upDateLog(log);
+		WriteLog(log);
 
 	}
 }
@@ -365,7 +363,7 @@ void ArenaCameraObject::_SetCameraParamDouble(string NodeName, double Value)
 
 		std::string strGe(ge.what());
 		string log = "_SetCameraParamDouble  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
-		_icamera_upDateLog(log);
+		WriteLog(log);
 
 	}
 }
@@ -383,7 +381,7 @@ void ArenaCameraObject::_GetCameraParamDouble(string NodeName, double& Value)
 
 		std::string strGe(ge.what());
 		string log = "_GetCameraParamDouble  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
-		_icamera_upDateLog(log);
+		WriteLog(log);
 
 	}
 
@@ -402,7 +400,7 @@ void ArenaCameraObject::_SetCameraParamInt(string NodeName, int Value)
 
 		std::string strGe(ge.what());
 		string log = "_SetCameraParamInt  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
-		_icamera_upDateLog(log);
+		WriteLog(log);
 	}
 }
 
@@ -425,7 +423,7 @@ void ArenaCameraObject::_SetCameraParamBool(string NodeName, bool Value)
 
 		std::string strGe(ge.what());
 		string log = "_SetCameraParamBool  GenICam exception thrown: " + strGe + "NodeName: " + NodeName + " Value : " + to_string(Value);
-		_icamera_upDateLog(log);
+		WriteLog(log);
 	}
 
 }
@@ -449,7 +447,7 @@ void ArenaCameraObject::Excute(string ExcuteCmd)
 
 		std::string strGe(ex.what());
 		string log = "ExcuteCmd: " + ExcuteCmd + " " + strGe;
-		_icamera_upDateLog(log);
+		WriteLog(log);
 	}
 	catch (GenICam::GenericException& ge)
 	{
@@ -457,7 +455,7 @@ void ArenaCameraObject::Excute(string ExcuteCmd)
 
 		std::string strGe(ge.what());
 		string log = "ExcuteCmd: " + ExcuteCmd + " " + strGe;
-		_icamera_upDateLog(log);
+		WriteLog(log);
 
 	}
 }
@@ -613,7 +611,7 @@ void ArenaCameraObject::_GetImgPtr(unsigned int*& imgPtr)
 		//ArenaCameraObject::_mtx_Grab.unlock();
 		cout << ge.what() << endl;
 		std::string strGe(ge.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 	}
 	catch (...)
 	{
@@ -661,7 +659,7 @@ void ArenaCameraObject::_GetImgPtr(void*& imgPtr)
 		cout << ge.what() << endl;
 
 		std::string strGe(ge.what());
-		_icamera_upDateLog(strGe);
+		WriteLog(strGe);
 
 	}
 	catch (...)

@@ -1,3 +1,4 @@
+#pragma once
 #include "CameraComponentForLabview.h"
 #include "MultiCameraManager.h"
 #include <opencv2/core/mat.hpp>
@@ -17,8 +18,19 @@ bool CameraManager_DoInitialize(int* CameraCount)
 
 	WriteLog("CameraCount :"+to_string(CameraCount[0]));
 
-	if (CameraCount [0]> 0)
+
+
+	if (CameraCount[0] > 0)
+	{
+		for (int i = 0; i < CameraCount[0]; i++)
+		{
+			string str;
+			CameraManager::GetCameraName(i, str);
+			WriteLog("Camera"+to_string(i) + " :" + str);
+		}
+
 		return true;
+	}
 	else
 		return false;
 }
@@ -92,10 +104,7 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 	else if (Channels == 3 && containsSubstring(strVal, "RGB"))
 		cvCvtType = cv::ColorConversionCodes::COLOR_RGB2RGBA;
 	else if (Channels == 1 && containsSubstring(strVal, "BayerRG"))
-	{
 		cvCvtType = cv::ColorConversionCodes::COLOR_BayerRG2BGRA;
-	}
-
 
 	if (Channels != 4)
 		cv::cvtColor(img, image_output, cvCvtType);
@@ -118,16 +127,13 @@ void CameraManager_Grab_Char(int cameraId, unsigned char* imgPtr)
 bool CameraManager_SetCameraParam(int cameraId, char* NodeName,char* Value)
 {
 	CameraManager::SetCameraParam(cameraId, NodeName, Value);
-	//WriteLog("Set cameraId :" + to_string(cameraId) + " NodeName " + NodeName + " Value:" + Value);
 	return true;
 }
 
 void CameraManager_GetCameraParam(int cameraId,char* NodeName,char* Value)
 {
 	const char* cChar=CSharp_GetCameraParam(cameraId,NodeName);
-
 	std::strcpy(Value, cChar); // 複製內容到緩衝區
-	//WriteLog("Get cameraId :" +to_string(cameraId) +" NodeName "+ NodeName+" Value:"+ Value);
 
 }
 

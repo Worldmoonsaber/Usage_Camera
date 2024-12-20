@@ -33,12 +33,6 @@ public:
 
 private:
 
-	//thread thr_Img_Grab;
-	std::mutex _mtx_Grab;
-	std::mutex _mtx_SetParam;
-	std::mutex _mtx_GetParam;
-
-
 	bool _containsSubstring(const std::string& mainStr, const std::string& subStr);
 	void _UpdateMap(string NodeName, string Value);
 	void _CreateMap(string NodeName, string Value);

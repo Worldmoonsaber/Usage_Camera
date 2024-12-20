@@ -3,6 +3,13 @@
 #include <iostream>
 #include<fstream>
 #include <windows.h>
+#include <stdlib.h> // free, perror
+#include <stdio.h>  // printf
+#include <string.h> // strlen
+#include <io.h> // strlen
+#include <string> // strlen
+#include <chrono>
+#include <direct.h>
 
 
 using namespace std;
@@ -97,18 +104,46 @@ extern "C" __declspec(dllexport)  void CSharp_LoadDefaultParameter(int cameraId)
 /// Debugㄏノ
 /// </summary>
 /// <param name="message"></param>
+static bool isExistPath = false;
+
+/// <summary>
+/// Debugㄏノ
+/// </summary>
+/// <param name="message"></param>
 static void WriteLog(const std::string& message) {
 
 	SYSTEMTIME st;
 	GetLocalTime(&st);
 
-
-	std::ofstream logFile("camera_manager_log_"+ to_string(st.wMonth) + "-" + to_string(st.wDay) +".txt", std::ios::app); // 發家Αゴ秨ゅン
-	if (logFile.is_open()) 
+	if (!isExistPath)
 	{
-		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) +":" + to_string(st.wMilliseconds);
+		string strPath;
+		char* buffer;
 
-		logFile <<str <<" " << message << std::endl; // 糶ら粁ず甧传︽
+		// Get the current working directory:
+		if ((buffer = _getcwd(NULL, 0)) != NULL)
+		{
+			strPath.assign(buffer, strlen(buffer));
+			free(buffer);
+		}
+
+		strPath = strPath + "\\Log\\";
+
+		if (_access(strPath.c_str(), 0) == -1)
+		{
+			_mkdir(strPath.c_str());
+			isExistPath = true;
+		}
+		else
+			isExistPath = true;
+	}
+
+	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 發家Αゴ秨ゅン
+	if (logFile.is_open())
+	{
+		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) + ":" + to_string(st.wMilliseconds);
+
+		logFile << str << " " << message << std::endl; // 糶ら粁ず甧传︽
 	}
 	else {
 		std::cerr << "Unable to open log file." << std::endl; // ゅンゴ秨ア毖ゴ岿粇

@@ -85,6 +85,11 @@ extern "C" __declspec(dllexport) void CSharp_GetErrorLog(const char** array);
 
 extern "C" __declspec(dllexport) const char* CSharp_GetCurrntVersion();
 
+extern "C" __declspec(dllexport)  void CSharp_SaveCurrentParameter(int cameraId);
+
+extern "C" __declspec(dllexport)  void CSharp_LoadDefaultParameter(int cameraId);
+
+
 #pragma endregion
 
 

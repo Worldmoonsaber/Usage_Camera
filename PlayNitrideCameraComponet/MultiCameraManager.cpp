@@ -519,13 +519,23 @@ void CSharp_GetErrorLog(const char** array)
 
 const char* CSharp_GetCurrntVersion()
 {
-	string strVal = "1.0.0.2";
+	string strVal = "1.0.0.3";
 	char* res = (char*)malloc(strVal.size() + 1);
 	strcpy(res, strVal.c_str());
 
 	return res;
-
-
 }
+
+void CSharp_SaveCurrentParameter(int cameraId)
+{
+	CameraManager::SaveCurrentCameraParam(cameraId);
+}
+
+void CSharp_LoadDefaultParameter(int cameraId)
+{
+	CameraManager::LoadSavedCameraParam(cameraId);
+}
+
+
 
 #pragma endregion

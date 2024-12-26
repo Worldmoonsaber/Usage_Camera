@@ -711,11 +711,7 @@ void ArenaCameraObject::_LoadConfig()
 	else
 	{
 		//---檔案不存在 建立檔案 並將目前的參數寫入檔案
-		fstream write_file;
-		write_file.open(strPath, std::ios::out);
-
-		write_file.close();
-
+		_SaveConfig();
 	}
 
 

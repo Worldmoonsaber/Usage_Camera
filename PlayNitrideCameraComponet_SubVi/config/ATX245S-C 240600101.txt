@@ -1,0 +1,14 @@
+ExposuretTime:21001.416000
+GainRed:2.389160
+GainGreen:1.002441
+GainBlue:1.523438
+GainAll:0.000000
+Gamma:1.000000
+Width:5320
+Height:4600
+GevSCPD:9800
+PixelFormat:BGR8
+ADCBitDepth:Bits8
+DeviceStreamChannelPacketSize:9000
+DeviceLinkThroughputReserve:10
+AcquisitionFrameRate:6.448784

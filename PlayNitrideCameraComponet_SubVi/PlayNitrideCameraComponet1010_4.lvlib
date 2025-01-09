@@ -30,7 +30,6 @@
 	<Item Name="GetImageSize.vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/GetImageSize.vi"/>
 	<Item Name="DEMO_CameraManager.vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/DEMO_CameraManager.vi"/>
 	<Item Name="cam_Global.vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/cam_Global.vi"/>
-	<Item Name="GrabImageTest.vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/GrabImageTest.vi"/>
 	<Item Name="DEMO_HOW_TO_USE_CameraManager.vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/DEMO_HOW_TO_USE_CameraManager.vi"/>
 	<Item Name="State (SubVI).vi" Type="VI" URL="/&lt;userlib&gt;/PlayNitrideCameraComponet1010_4/State (SubVI).vi"/>
 </Library>

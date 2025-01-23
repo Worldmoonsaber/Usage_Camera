@@ -14,7 +14,8 @@ using namespace StApi;
 //Namespace for using cout
 using namespace std;
 
-
+//Namespace for using GenApi.
+using namespace GenApi;
 
 class OmronCameraObject : public ICamera
 {
@@ -51,7 +52,26 @@ private:
 	bool _IsStreamStart = false;
 	bool _isInitialized = false;
 	CIStDevicePtr _device;
-	CIStDataStreamPtr _StreamPtr;
+	static CIStDataStreamPtr _StreamPtr;
+	//CNodeMapPtr pINodeMapRemote;
+
+	void Execute(INodeMap* pINodeMap, const char* szCommandName);
+	//-----------------------------------------------------------------------------
+	// Set the setting of indicated enumeration of the node map.
+	//-----------------------------------------------------------------------------
+	void SetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, const char* szValueName);
+
+
+	void GetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
+	void GetInteger(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
+
+	const char* USER_SET_SELECTOR = "UserSetSelector";						//Standard
+	const char* USER_SET_TARGET = "UserSet1";								//Standard
+	const char* USER_SET_LOAD = "UserSetLoad";								//Standard
+	const char* USER_SET_SAVE = "UserSetSave";								//Standard
+	const char* USER_SET_DEFAULT = "UserSetDefault";						//Standard
+	const char* USER_SET_DEFAULT_SELECTOR = "UserSetDefaultSelector";		//Standard(Deprecated)
+	const char* PIXEL_FORMAT = "PixelFormat";								//Standard
 
 };
 
@@ -70,42 +90,53 @@ static void InitializeOmron(vector<ICamera*>& vCamera)
 
 	int indx = 0;
 
-	for (;;)
+	try
 	{
-		IStDeviceReleasable* pIStDeviceReleasable = NULL;
-
-		try
+		for (;;)
 		{
-			pIStDeviceReleasable = pIStSystem->CreateFirstIStDevice();
-		}
-		catch (...)
-		{
-		}
-		
-		OmronCameraObject* obj = new OmronCameraObject(pIStDeviceReleasable, indx);
+			IStDeviceReleasable* pIStDeviceReleasable = NULL;
 
-		bool existSame = false;
-
-		for (int i = 0; i < vOmron.size(); i++)
-		{
-			string str0 = obj->CameraName();
-			string str1 = vOmron[i]->CameraName();
-
-			if (str0 == str1)
+			try
 			{
-				existSame = true;
-				break;
+				pIStDeviceReleasable = pIStSystem->CreateFirstIStDevice();
+			}
+			catch (...)
+			{
 			}
 
-		}
 
-		if (!existSame)
-			vOmron.push_back(obj);
-		else
+			OmronCameraObject* obj = new OmronCameraObject(pIStDeviceReleasable, indx);
+
+			bool existSame = false;
+
+			for (int i = 0; i < vOmron.size(); i++)
+			{
+				string str0 = obj->CameraName();
+				string str1 = vOmron[i]->CameraName();
+
+				if (str0 == str1 || str0 == "")
+				{
+					existSame = true;
+					break;
+				}
+
+			}
+
+			if (!existSame)
+				vOmron.push_back(obj);
+			else
+				break;
+
+			indx++;
 			break;
-
-		indx++;
+		}
 	}
+	catch (const GenICam::GenericException& e)
+	{
+		// Display the description of the error of exception.
+		cerr << endl << "An exception occurred." << endl << e.GetDescription() << endl;
+	}
+
 
 	for (int i = 0; i < vOmron.size(); i++)
 		vCamera.push_back((ICamera*)vOmron[i]);

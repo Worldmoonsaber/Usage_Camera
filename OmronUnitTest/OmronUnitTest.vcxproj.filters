@@ -18,5 +18,19 @@
     <ClCompile Include="OmronUnitTest.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="ICamera.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="OmronCameraObject.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ICamera.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="OmronCameraObject.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

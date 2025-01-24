@@ -1,5 +1,6 @@
 #pragma once
 #include "ICamera.h"
+#include <queue>
 
 
 #include <StApi_TL.h>
@@ -8,27 +9,27 @@
 #include <iomanip>	//std::setprecision
 #endif
 
-//Namespace for using StApi.
 using namespace StApi;
 
-//Namespace for using cout
 using namespace std;
 
-//Namespace for using GenApi.
 using namespace GenApi;
+
+enum StateMechine {
+	idle,    // 預設狀態
+	waitGrabImage,  // 可以取像的狀態
+	acquistionStart,// 呼叫 acquistionStart 呼叫完成後 改狀態為 waitGrabImage
+	acquistionStop  // 呼叫 acquistionStop 呼叫完成後 改狀態為 idle
+};
 
 class OmronCameraObject : public ICamera
 {
 
 public:
 	OmronCameraObject();
-
-	//OmronCameraObject(CIStDevicePtr device);
 	
 	OmronCameraObject(IStDeviceReleasable* obj, int indx);
 
-	
-	//~OmronCameraObject() = delete;;
 
 	void Initialize();
 	void Close();
@@ -48,31 +49,34 @@ public:
 	void Load();
 
 private:
+
+	bool _isCameraOn;
+	bool _isDispose;
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="qCommand">指令</param>
+	/// <param name="qAack">取得數值</param>
+	/// <param name="_isDispose"></param>
+	static void thread_WorkingLoop(IStDeviceReleasable** obj, int indx, bool* _isCameraOn, bool* _isDispose, queue<string>* qCommand, queue<string>* qAck, mutex* mutex);// int* indx, IStDeviceReleasable** obj, queue<string>* qCommand, queue<string>* qAck, bool* _isCameraOn, bool* _isDispose);
+	mutex mu;
+	thread thread_Work;
+
+	queue<string> qCommand;
+	queue<string> qAck_ReturnValue;
+
 	IStDeviceReleasable* pIStDeviceReleasable;
+
 	bool _IsStreamStart = false;
 	bool _isInitialized = false;
-	CIStDevicePtr _device;
-	static CIStDataStreamPtr _StreamPtr;
 	//CNodeMapPtr pINodeMapRemote;
 
-	void Execute(INodeMap* pINodeMap, const char* szCommandName);
-	//-----------------------------------------------------------------------------
-	// Set the setting of indicated enumeration of the node map.
-	//-----------------------------------------------------------------------------
-	void SetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, const char* szValueName);
+	static void Execute(INodeMap* pINodeMap, const char* szCommandName);
+	static void SetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, const char* szValueName);
+	static void GetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
+	static void GetInteger(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
 
-
-	void GetEnumeration(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
-	void GetInteger(INodeMap* pINodeMap, const char* szEnumerationName, string& strVal);
-
-	const char* USER_SET_SELECTOR = "UserSetSelector";						//Standard
-	const char* USER_SET_TARGET = "UserSet1";								//Standard
-	const char* USER_SET_LOAD = "UserSetLoad";								//Standard
-	const char* USER_SET_SAVE = "UserSetSave";								//Standard
-	const char* USER_SET_DEFAULT = "UserSetDefault";						//Standard
-	const char* USER_SET_DEFAULT_SELECTOR = "UserSetDefaultSelector";		//Standard(Deprecated)
-	const char* PIXEL_FORMAT = "PixelFormat";								//Standard
-
+	StateMechine _status;
 };
 
 
@@ -92,7 +96,7 @@ static void InitializeOmron(vector<ICamera*>& vCamera)
 
 	try
 	{
-		for (;;)
+		//for (;;)
 		{
 			IStDeviceReleasable* pIStDeviceReleasable = NULL;
 
@@ -124,11 +128,11 @@ static void InitializeOmron(vector<ICamera*>& vCamera)
 
 			if (!existSame)
 				vOmron.push_back(obj);
-			else
-				break;
+			//else
+			//	break;
 
-			indx++;
-			break;
+			//indx++;
+			//break;
 		}
 	}
 	catch (const GenICam::GenericException& e)

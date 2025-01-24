@@ -16,24 +16,24 @@ int main()
     InitializeOmron(lstCamera);
     
 
-    string str=lstCamera[0]->CameraName();
-    std::cout << "CameraName : "<<str<<endl;
+   // string str=lstCamera[0]->CameraName();
+   // std::cout << "CameraName : "<<str<<endl;
 
-   // lstCamera[0]->SetCameraParam("PixelFormat", "Mono10");
-    //std::cout << "Set PixelFormat : " << strVal << endl;
+    lstCamera[0]->SetCameraParam("PixelFormat", "Mono10");
+   // //std::cout << "Set PixelFormat : " << strVal << endl;
 
 
 
     string strVal;
     lstCamera[0]->GetCameraParam("PixelFormat", strVal);
-    std::cout << "Get PixelFormat : " << strVal << endl;
+   // std::cout << "Get PixelFormat : " << strVal << endl;
 
     lstCamera[0]->GetCameraParam("Width", strVal);
-    std::cout << "Get Width : " << strVal << endl;
+   // std::cout << "Get Width : " << strVal << endl;
 
 
     lstCamera[0]->GetCameraParam("Height", strVal);
-    std::cout << "Get Height : " << strVal << endl;
+   // std::cout << "Get Height : " << strVal << endl;
 
 
     //lstCamera[0]->AcquisitionStart();

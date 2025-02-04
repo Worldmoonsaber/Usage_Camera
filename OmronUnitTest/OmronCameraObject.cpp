@@ -1,50 +1,203 @@
 #include "OmronCameraObject.h"
 #include <StApi_TLFunctions.h>
 #include <StApi_GUIDef.h>
+#include <future>
 using namespace StApi;
 
+void WorkingLoop_AcqStart(CIStDevicePtr& dev, CIStDataStreamPtr& stream,bool& isCameraOn)
+{
+	if (!isCameraOn)
+	{
+		stream->StartAcquisition();
+		dev->AcquisitionStart();
+		isCameraOn = true;
+	}
+}
+
+void WorkingLoop_AcqStart(CIStDevicePtrArray& dev, CIStDataStreamPtrArray& stream, bool& isCameraOn)
+{
+	if (!isCameraOn)
+	{
+		stream.StartAcquisition();
+		dev.AcquisitionStart();
+		isCameraOn = true;
+	}
+}
+
+
+void WorkingLoop_AcqStop(CIStDevicePtr& dev, CIStDataStreamPtr& stream,bool& isCameraOn)
+{
+	if (isCameraOn)
+	{
+		dev->AcquisitionStop();
+		stream->StopAcquisition();
+		isCameraOn = false;
+	}
+}
+
+
+void thread_WorkingLoop_Test(IStDeviceReleasable*& Obj, queue<string>*& qCommand,mutex*& mu)
+{
+	try
+	{
+		bool isCameraOn = false;
+		CIStDevicePtrArray pIStDeviceList;
+		CIStDataStreamPtrArray pIStDataStreamList;
+
+		pIStDeviceList.Register(Obj);
+		pIStDataStreamList.Register(Obj->CreateIStDataStream(0));
+		CNodeMapPtr pINodeMapRemote(pIStDeviceList[0]->GetRemoteIStPort()->GetINodeMap());
+
+		WorkingLoop_AcqStart(pIStDeviceList, pIStDataStreamList, isCameraOn);
+
+		while (true)
+		{
+			//if (qCommand.size() != 0)
+			//{
+			//	mu.lock();
+			//	string strObj = qCommand.front();//取得資料
+			//	qCommand.pop();//將資料從_QueueObj中清除		
+			//	mu.unlock();
+			//	std::cout << "Command  " << strObj << endl;
+
+			//}
+
+
+
+		}
+
+
+		//WorkingLoop_AcqStart(pIStDeviceList, pIStDataStreamList,isCameraOn);
+
+		//while (pIStDataStreamList.IsGrabbingAny())
+		//{
+		//	// Retrieve data buffer pointer of image data from any camera with a timeout of 5000ms.
+		//	CIStStreamBufferPtr pIStStreamBuffer(pIStDataStreamList.RetrieveBuffer(5000));
+
+		//	// Check if the acquired data contains image data.
+		//	if (pIStStreamBuffer->GetIStStreamBufferInfo()->IsImagePresent())
+		//	{
+		//		cout
+		//			<< pIStStreamBuffer->GetIStDataStream()->GetIStDevice()->GetIStDeviceInfo()->GetDisplayName()
+		//			<< " : BlockId=" << dec << pIStStreamBuffer->GetIStStreamBufferInfo()->GetFrameID()
+		//			<< " " << setprecision(4) << pIStStreamBuffer->GetIStDataStream()->GetCurrentFPS() << "FPS" << endl;
+		//	}
+		//	else
+		//	{
+		//		// If the acquired data contains no image data.
+		//		cout << "Image data does not exist" << endl;
+		//	}
+		//}
+
+		//WorkingLoop_AcqStop(pIStDeviceList, pIStDataStreamList, isCameraOn);
+	}
+	catch (const GenICam::GenericException& e)
+	{
+		cerr << endl << "An exception occurred." << endl << e.GetDescription() << endl;
+	}
+
+}
 
 OmronCameraObject::OmronCameraObject()
 {
 }
 
-OmronCameraObject::OmronCameraObject(IStDeviceReleasable* obj, int indx)
+OmronCameraObject::OmronCameraObject(IStDeviceReleasable* obj)
 {
-	pIStDeviceReleasable = obj;
+
+	_device = obj;
+	_strName = _device->GetIStDeviceInfo()->GetDisplayName();
+	std::cout << "strName " << _strName << endl;
+	//thread_Work = thread(&OmronCameraObject::thread_WorkingLoop, obj,&qCommand,&mu);
+	_pIStDevice.Reset(_device);
+	pIStDataStream.Reset(_pIStDevice->CreateIStDataStream(0));
+
+	//pIStDataStream->StartAcquisition();
+	//_pIStDevice->AcquisitionStart();
+
+	//while (pIStDataStream->IsGrabbing())
+	//{
+	//// Retrieve data buffer pointer of image data from any camera with a timeout of 5000ms.
+	//	CIStStreamBufferPtr pIStStreamBuffer(pIStDataStream->RetrieveBuffer(5000));
+
+	//// Check if the acquired data contains image data.
+	//	if (pIStStreamBuffer->GetIStStreamBufferInfo()->IsImagePresent())
+	//	{
+	//		cout
+	//		<< pIStStreamBuffer->GetIStDataStream()->GetIStDevice()->GetIStDeviceInfo()->GetDisplayName()
+	//		<< " : BlockId=" << dec << pIStStreamBuffer->GetIStStreamBufferInfo()->GetFrameID()
+	//		<< " " << setprecision(4) << pIStStreamBuffer->GetIStDataStream()->GetCurrentFPS() << "FPS" << endl;
+	//	}
+	//	else
+	//	{
+	//		// If the acquired data contains no image data.
+	//		cout << "Image data does not exist" << endl;
+	//	}
+	//}
+ 
+	//CIStDevicePtrArray pIStDeviceList;
+	//CIStDataStreamPtrArray pIStDataStreamList;
+
+	//pIStDeviceList.Register(obj);
+	//pIStDataStreamList.Register(obj->CreateIStDataStream(0));
+	//CNodeMapPtr pINodeMapRemote(pIStDeviceList[0]->GetRemoteIStPort()->GetINodeMap());
+
+	//thread_Work = thread(&OmronCameraObject::thread_WorkingLoop_test1, pIStDeviceList, pIStDataStreamList, pINodeMapRemote);
+
+	//-----不能使用 async 程式會卡在這個函式裡面
+
+	//_pIStDeviceList.Register(obj);
+
+	//// Create a DataStream object for handling image stream data then add into DataStream list for later usage.
+	//_pIStDataStreamList.Register(obj->CreateIStDataStream(0));
+	//thread_Work = thread(thread_WorkingLoop_Test);
+
+	//std::future<void> Thread_Working_Loop = std::async(std::launch:async, thread_WorkingLoop_Test, std::ref(obj),std::ref(qCommand),std::ref(mu));
+	//cout << "Thread_Working_Loop Start \n";
+//std:thread Thread_Working_Loop = std::thread(thread_WorkingLoop_Test, std::ref(obj), std::ref(qCommand), std::ref(mu));
+
+	//result.get();
+	//_pIStDataStreamList.StartAcquisition();
+	//_pIStDeviceList.AcquisitionStart();
+	//pIStDeviceReleasable = obj;
 	//CIStDevicePtr pIStDevice(pIStDeviceReleasable);
-	_strName = pIStDeviceReleasable->GetIStDeviceInfo()->GetDisplayName();
-	uint32_t ps = pIStDeviceReleasable->GetDataStreamCount();
+	//_strName = pIStDeviceReleasable->GetIStDeviceInfo()->GetDisplayName();
+	//uint32_t ps = pIStDeviceReleasable->GetDataStreamCount();
 
+	//IStDeviceReleasable* device = (IStDeviceReleasable*)_pIStDeviceList[0];
 
-	if (indx < ps)
-	{
-		_isCameraOn = false;
-		_isDispose = false;
-		//queue<string> qCommand;
-		//queue<string> qAck_ReturnValue;
+	//	static void thread_WorkingLoop(CIStDevicePtr* obj, CIStDataStreamPtrArray* Stream , int indx, bool* _isCameraOn, bool* _isDispose, queue<string>* qCommand, queue<string>* qAck, mutex* mutex);// int* indx, IStDeviceReleasable** obj, queue<string>* qCommand, queue<string>* qAck, bool* _isCameraOn, bool* _isDispose);
+	//thread_Work = thread(OmronCameraObject::thread_WorkingLoop, &_pIStDeviceList);
 
-		//	static void thread_WorkingLoop(IStDeviceReleasable** obj, int indx, bool* _isCameraOn, bool* _isDispose, queue<string>* qCommand, queue<string>* qAck);// int* indx, IStDeviceReleasable** obj, queue<string>* qCommand, queue<string>* qAck, bool* _isCameraOn, bool* _isDispose);
-		thread_Work = thread(OmronCameraObject::thread_WorkingLoop, &pIStDeviceReleasable,indx,&_isCameraOn,&_isDispose,&qCommand,&qAck_ReturnValue,&mu);// , & pIStDeviceReleasable, & qCommand, & qAck_ReturnValue, & _isCameraOn, & _isDispose);
+	//if (indx < ps)
+	//{
+	//	_isCameraOn = false;
+	//	_isDoDispose = false;
+	//	//queue<string> qCommand;
+	//	//queue<string> qAck_ReturnValue;
 
-		//_StreamPtr = pIStDevice->CreateIStDataStream(indx);
-		//CNodeMapPtr pINodeMapRemote = pIStDevice->GetRemoteIStPort()->GetINodeMap();
+	//	//	static void thread_WorkingLoop(IStDeviceReleasable** obj, int indx, bool* _isCameraOn, bool* _isDispose, queue<string>* qCommand, queue<string>* qAck);// int* indx, IStDeviceReleasable** obj, queue<string>* qCommand, queue<string>* qAck, bool* _isCameraOn, bool* _isDispose);
+	//	//thread_Work = thread(OmronCameraObject::thread_WorkingLoop, &pIStDeviceReleasable,indx,&_isCameraOn,&_isDoDispose,&qCommand,&qAck_ReturnValue,&mu);// , & pIStDeviceReleasable, & qCommand, & qAck_ReturnValue, & _isCameraOn, & _isDispose);
 
-		//SetEnumeration(pINodeMapRemote, USER_SET_SELECTOR, USER_SET_TARGET);
-		//Execute(pINodeMapRemote, USER_SET_LOAD);
+	//	//_StreamPtr = pIStDevice->CreateIStDataStream(indx);
+	//	//CNodeMapPtr pINodeMapRemote = pIStDevice->GetRemoteIStPort()->GetINodeMap();
 
-		//CIStFeatureBagPtr pIStFeatureBagPtr = CreateIStFeatureBag();
+	//	//SetEnumeration(pINodeMapRemote, USER_SET_SELECTOR, USER_SET_TARGET);
+	//	//Execute(pINodeMapRemote, USER_SET_LOAD);
 
-		//// Save the current settings to FeatureBag.
-		//pIStFeatureBagPtr->StoreNodeMapToBag(pINodeMapRemote);
+	//	//CIStFeatureBagPtr pIStFeatureBagPtr = CreateIStFeatureBag();
 
-		//string strVal;
-		//GetEnumeration(pIStDeviceReleasable->GetRemoteIStPort()->GetINodeMap(), "PixelFormat", strVal);
-	}
-	else
-	{
-		_strName = "";
-		//pIStDevice.~CStAutoPtr();
-	}
+	//	//// Save the current settings to FeatureBag.
+	//	//pIStFeatureBagPtr->StoreNodeMapToBag(pINodeMapRemote);
+
+	//	//string strVal;
+	//	//GetEnumeration(pIStDeviceReleasable->GetRemoteIStPort()->GetINodeMap(), "PixelFormat", strVal);
+	//}
+	//else
+	//{
+	//	_strName = "";
+	//	//pIStDevice.~CStAutoPtr();
+	//}
 }
 
 void OmronCameraObject::Initialize()
@@ -53,6 +206,9 @@ void OmronCameraObject::Initialize()
 
 void OmronCameraObject::Close()
 {
+	_isDoDispose = true;
+
+
 }
 
 void OmronCameraObject::Grab_Int(unsigned int*& imgPtr)
@@ -65,9 +221,7 @@ void OmronCameraObject::Grab(void*& imgPtr)
 
 void OmronCameraObject::SetCameraParam(string NodeName, string Value)
 {
-	//mu.lock();
-	////qCommand.push("SetCameraParam:" + NodeName+":" + Value);
-	//mu.unlock();
+	//AddToTheQueue("SetCameraParam:" + NodeName + ":" + Value);
 
 	/*
 	if (NodeName == "PixelFormat")
@@ -94,9 +248,7 @@ void OmronCameraObject::SetCameraParam(string NodeName, string Value)
 void OmronCameraObject::GetCameraParam(string NodeName, string& Value)
 {
 	Value = "";
-	//mu.lock();
-	////qCommand.push("GetCameraParam:" + NodeName);
-	//mu.unlock();
+	//AddToTheQueue("GetCameraParam:" + NodeName);
 	//------等待 qAck_ReturnValue 取得資料
 	//while(true)
 
@@ -126,17 +278,36 @@ void OmronCameraObject::GetCameraParam(string NodeName, string& Value)
 
 void OmronCameraObject::Excute(string ExcuteCmd)
 {
+
 	//qCommand.push("Excute:"+ ExcuteCmd);
 }
 
 void OmronCameraObject::AcquisitionStart()
 {
-	//pIStDeviceReleasable->AcquisitionStart();
+	try{
+	//CIStDevicePtr _pIStDevice;
+	//CIStDataStreamPtr pIStDataStream;// (pIStDevice->CreateIStDataStream(0));
+	pIStDataStream->StartAcquisition();
+	_pIStDevice->AcquisitionStart();
+
+	//AddToTheQueue("ACQ:Start");
+	//_pIStDevice.Reset(_device);
+	//pIStDataStream.Reset(_pIStDevice->CreateIStDataStream(0));
+
+	}
+	catch (const GenICam::GenericException& e)
+	{
+		cerr << endl << "An exception occurred." << endl << e.GetDescription() << endl;
+	}
 }
 
 void OmronCameraObject::AcquisitionStop()
 {
-	//pIStDeviceReleasable->AcquisitionStop();
+	_pIStDevice->AcquisitionStop();
+	pIStDataStream->StopAcquisition();
+	//AddToTheQueue("ACQ:Stop");
+	//_pIStDevice.Reset(_device);
+
 }
 
 void OmronCameraObject::Save()
@@ -147,53 +318,88 @@ void OmronCameraObject::Load()
 {
 }
 
-void OmronCameraObject::thread_WorkingLoop(IStDeviceReleasable** obj, int indx, bool* _isCameraOn, bool* _isDispose, queue<string>* qCommand, queue<string>* qAck, mutex* mutex)// int* indx, IStDeviceReleasable** obj, queue<string>* qCommand, queue<string>* qAck, bool* _isCameraOn, bool* _isDispose)
+void OmronCameraObject::AddToTheQueue(string str)
+{
+	mu.lock();
+	qCommand.push(str);
+	mu.unlock();
+}
+
+void OmronCameraObject::thread_WorkingLoop(IStDeviceReleasable* obj, queue <string>* queue, mutex* mutex)
 {
 	try
 	{
+		bool isCameraOn = false;
 
-		IStDeviceReleasable* _obj = obj[0];
-		CIStDevicePtr pIStDevice(_obj);
-		CIStDataStreamPtr pStreamPtr = pIStDevice->CreateIStDataStream(indx);
-		CNodeMapPtr pINodeMapRemote = pIStDevice->GetRemoteIStPort()->GetINodeMap();
+		CIStDevicePtr pIStDevice;
+		CIStDataStreamPtr pIStDataStream;
+		CIStRegisteredCallbackPtr pIStRegisteredCallbackDeviceLost;
+
+
+
+		pIStDevice.Reset(obj);
+		pIStDataStream.Reset(pIStDevice->CreateIStDataStream(0));
+		pIStRegisteredCallbackDeviceLost.Reset(NULL);
+
+
+		CNodeMapPtr pINodeMapRemote(pIStDevice->GetRemoteIStPort()->GetINodeMap());
+
+		std::cout << "pIStDevice->GetIStDeviceInfo()->GetDisplayName() " << pIStDevice->GetIStDeviceInfo()->GetDisplayName() << endl;
+
+		pIStDataStream->StartAcquisition();
+		pIStDevice->AcquisitionStart();
 
 		while (true)
 		{
+			if (queue->size() != 0)
+			{
+				mutex->lock();
+				string strObj = queue->front();//取得資料
+				queue->pop();//將資料從_QueueObj中清除		
+				mutex->unlock();
+				std::cout << "Command  " << strObj << endl;
 
-			//if (qCommand->size() != 0)
-			//{
-			//	string obj;
+			}
 
-			//	mutex->lock();
-			//	obj = qCommand->front();//取得指令
-			//	qCommand->pop();//將資料從_QueueObj中清除		
-			//	mutex->unlock();
-
-			//	//---進行工作
-			//	cout << "obj :" << obj << endl;
-
-
-			//}
+			//std::cout << "queue->size() "<< queue->size() << endl;
 
 
-
-
-
-			if (_isDispose)
-				break;
 		}
 
 
-		//	if (_isDispose[0])
-		//		true;
+		//WorkingLoop_AcqStart(pIStDeviceList, pIStDataStreamList,isCameraOn);
+
+		//while (pIStDataStreamList.IsGrabbingAny())
+		//{
+		//	// Retrieve data buffer pointer of image data from any camera with a timeout of 5000ms.
+		//	CIStStreamBufferPtr pIStStreamBuffer(pIStDataStreamList.RetrieveBuffer(5000));
+
+		//	// Check if the acquired data contains image data.
+		//	if (pIStStreamBuffer->GetIStStreamBufferInfo()->IsImagePresent())
+		//	{
+		//		cout
+		//			<< pIStStreamBuffer->GetIStDataStream()->GetIStDevice()->GetIStDeviceInfo()->GetDisplayName()
+		//			<< " : BlockId=" << dec << pIStStreamBuffer->GetIStStreamBufferInfo()->GetFrameID()
+		//			<< " " << setprecision(4) << pIStStreamBuffer->GetIStDataStream()->GetCurrentFPS() << "FPS" << endl;
+		//	}
+		//	else
+		//	{
+		//		// If the acquired data contains no image data.
+		//		cout << "Image data does not exist" << endl;
+		//	}
 		//}
 
-
+		//WorkingLoop_AcqStop(pIStDeviceList, pIStDataStreamList, isCameraOn);
 	}
 	catch (const GenICam::GenericException& e)
 	{
 		cerr << endl << "An exception occurred." << endl << e.GetDescription() << endl;
 	}
+}
+
+void OmronCameraObject::thread_WorkingLoop_test1(CIStDevicePtrArray pIStDeviceList, CIStDataStreamPtrArray pIStDataStreamList, CNodeMapPtr pINodeMapRemote)
+{
+
 }
 
 void OmronCameraObject::Execute(INodeMap* pINodeMap, const char* szCommandName)

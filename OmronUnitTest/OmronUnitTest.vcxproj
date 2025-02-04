@@ -100,7 +100,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\opencv\build\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\opencv\build\include;C:\Program Files\OMRON_SENTECH\SentechSDK\v1_1\Development\Include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)../bin/$(Configuration)/$(PlatformName)/</OutDir>
     <IntDir>$(SolutionDir)../Tmp/$(ProjectName)/$(Configuration)/$(PlatformName)/</IntDir>
     <TargetName>$(ProjectName)_VC$(PlatformToolsetVersion)_$(PlatformName)</TargetName>

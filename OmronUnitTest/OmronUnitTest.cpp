@@ -13,9 +13,17 @@ int main()
 {
     std::cout << "Hello World!\n";
 
-    InitializeOmron(lstCamera);
-    
 
+
+
+    InitializeOmron(lstCamera);
+    //system("PAUSE");
+    //return 0;
+
+    lstCamera[0]->AcquisitionStart();
+
+
+    lstCamera[0]->AcquisitionStop();
    // string str=lstCamera[0]->CameraName();
    // std::cout << "CameraName : "<<str<<endl;
 
@@ -29,18 +37,20 @@ int main()
    // std::cout << "Get PixelFormat : " << strVal << endl;
 
     lstCamera[0]->GetCameraParam("Width", strVal);
-   // std::cout << "Get Width : " << strVal << endl;
+   //// std::cout << "Get Width : " << strVal << endl;
 
 
     lstCamera[0]->GetCameraParam("Height", strVal);
    // std::cout << "Get Height : " << strVal << endl;
 
 
-    //lstCamera[0]->AcquisitionStart();
+    lstCamera[0]->AcquisitionStart();
 
     //lstCamera[0]->GetCameraParam("ExposureTime", strVal);
     //std::cout << "Get ExposureTime : " << strVal << endl;
 
+
+    //lstCamera[0]->Close();
 
     system("PAUSE");
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "ICamera.h"
 #include "OmronCameraObject.h"
+#include "OmronCameraManager.h"
 
 static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 
@@ -15,42 +16,22 @@ int main()
 
 
 
+    void* ptr;
 
-    InitializeOmron(lstCamera);
-    //system("PAUSE");
-    //return 0;
-
-    lstCamera[0]->AcquisitionStart();
-
-
-    lstCamera[0]->AcquisitionStop();
-   // string str=lstCamera[0]->CameraName();
-   // std::cout << "CameraName : "<<str<<endl;
-
-    lstCamera[0]->SetCameraParam("PixelFormat", "Mono10");
-   // //std::cout << "Set PixelFormat : " << strVal << endl;
-
-
-
+    for (int i = 0; i < theOmronCameraList.vOmronCamera.size(); i++)
+    {
+        lstCamera.push_back((ICamera*)theOmronCameraList.vOmronCamera[i]);
+    }
+  
     string strVal;
-    lstCamera[0]->GetCameraParam("PixelFormat", strVal);
-   // std::cout << "Get PixelFormat : " << strVal << endl;
 
-    lstCamera[0]->GetCameraParam("Width", strVal);
-   //// std::cout << "Get Width : " << strVal << endl;
+    lstCamera[0]->GetCameraParam("ExposureTime", strVal);
+    std::cout << "ExposureTime "<< strVal << endl;
 
 
-    lstCamera[0]->GetCameraParam("Height", strVal);
-   // std::cout << "Get Height : " << strVal << endl;
 
 
-    lstCamera[0]->AcquisitionStart();
 
-    //lstCamera[0]->GetCameraParam("ExposureTime", strVal);
-    //std::cout << "Get ExposureTime : " << strVal << endl;
-
-
-    //lstCamera[0]->Close();
 
     system("PAUSE");
 

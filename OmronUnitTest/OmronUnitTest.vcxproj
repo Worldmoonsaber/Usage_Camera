@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="OmronCameraObject.cpp" />
+    <ClCompile Include="OmronCameraManager.cpp" />
     <ClCompile Include="OmronUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="OmronCameraObject.h" />
+    <ClInclude Include="OmronCameraManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -100,11 +102,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\opencv\build\include;C:\Program Files\OMRON_SENTECH\SentechSDK\v1_1\Development\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\opencv\build\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)../bin/$(Configuration)/$(PlatformName)/</OutDir>
     <IntDir>$(SolutionDir)../Tmp/$(ProjectName)/$(Configuration)/$(PlatformName)/</IntDir>
     <TargetName>$(ProjectName)_VC$(PlatformToolsetVersion)_$(PlatformName)</TargetName>
-    <LibraryPath>C:\opencv\build\x64\vc15\lib;C:\Program Files\OMRON_SENTECH\SentechSDK\v1_1\Development\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -177,7 +179,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(STAPI_ROOT_PATH)lib/$(PlatformName)</AdditionalLibraryDirectories>
       <ShowProgress>NotSet</ShowProgress>
-      <AdditionalDependencies>opencv_world460.lib;FirmwareUpdate_MD_VC141_v3_2_Sentech.lib;GCBase_MD_VC141_v3_2_Sentech.lib;GenApi_MD_VC141_v3_2_Sentech.lib;Log_MD_VC141_v3_2_Sentech.lib;log4cpp_MD_VC141_v3_2_Sentech.lib;StAPi_C_MD_VC141_v1_1.lib;StApi_GUI_MD_VC141_v1_1.lib;StApi_IP_MD_VC141_v1_1.lib;StAPi_TL_MD_VC141_v1_1.lib;XmlParser_MD_VC141_v3_2_Sentech.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world460.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

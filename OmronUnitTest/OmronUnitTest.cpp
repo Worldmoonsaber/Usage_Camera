@@ -15,13 +15,7 @@ int main()
     std::cout << "Hello World!\n";
 
 
-
-    void* ptr;
-
-    for (int i = 0; i < theOmronCameraList.vOmronCamera.size(); i++)
-    {
-        lstCamera.push_back((ICamera*)theOmronCameraList.vOmronCamera[i]);
-    }
+    lstCamera=CameraManager::GetCamera();
   
     string strVal;
 

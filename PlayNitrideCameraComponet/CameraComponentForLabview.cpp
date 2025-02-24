@@ -18,8 +18,6 @@ bool CameraManager_DoInitialize(int* CameraCount)
 
 	WriteLog("CameraCount :"+to_string(CameraCount[0]));
 
-
-
 	if (CameraCount[0] > 0)
 	{
 		for (int i = 0; i < CameraCount[0]; i++)
@@ -90,7 +88,6 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 		cvType = CV_8UC3;
 	else if(Channels == 4)
 		cvType = CV_8UC4;
-
 
 	cv::Mat img(_Width, _Height, cvType, ptr);
 	cv::Mat image_output(_Width, _Height, CV_8UC4, &imgPtr[0]);

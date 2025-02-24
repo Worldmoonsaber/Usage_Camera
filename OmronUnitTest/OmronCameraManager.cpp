@@ -7,6 +7,11 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include <direct.h>
+#include <stdlib.h> // free, perror
+#include <stdio.h>  // printf
+#include <io.h> // strlen
+#include <chrono>
 
 using namespace StApi;
 using namespace std;
@@ -72,3 +77,84 @@ bool OmronCameraManager::InitInstance()
 }
 
 
+bool isExistPath = false;
+
+void CameraManager::WriteLog(const std::string& message) {
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+
+	if (!isExistPath)
+	{
+		string strPath;
+		char* buffer;
+
+		// Get the current working directory:
+		if ((buffer = _getcwd(NULL, 0)) != NULL)
+		{
+			strPath.assign(buffer, strlen(buffer));
+			free(buffer);
+		}
+
+		strPath = strPath + "\\Log\\";
+
+		if (_access(strPath.c_str(), 0) == -1)
+		{
+			_mkdir(strPath.c_str());
+			isExistPath = true;
+		}
+		else
+			isExistPath = true;
+	}
+
+
+	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件
+
+	if (logFile.is_open())
+	{
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) + ":" + to_string(st.wMilliseconds);
+		logFile << str << ":: Omron ::" << message << std::endl; // 寫入日誌內容並換行
+	}
+	else
+	{
+		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
+	}
+}
+
+
+static vector< ICamera*> lstCameraOmronAll; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
+
+
+vector<ICamera*> CameraManager::GetCamera()
+{
+	try
+	{
+
+		for (int i = 0; i < theOmronCameraList.vOmronCamera.size(); i++)
+		{
+			lstCameraOmronAll.push_back((ICamera*)theOmronCameraList.vOmronCamera[i]);
+		}
+		std::cout << "Initialize OmronCamera ... \n";
+
+		WriteLog("Initialize OmronCamera ...");
+
+	}
+	catch (exception ex)
+	{
+		WriteLog(ex.what());
+	}
+
+	return lstCameraOmronAll;
+}
+
+void CameraManager::CloseCamera()
+{
+	std::cout << "Omron::Close ArenaCamera ... \n";
+
+	for (int i = 0; i < lstCameraOmronAll.size(); i++)
+		lstCameraOmronAll[i]->Close();
+
+	lstCameraOmronAll.clear();
+}

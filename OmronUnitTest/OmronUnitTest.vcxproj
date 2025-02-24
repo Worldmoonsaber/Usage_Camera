@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICamera.h" />
+    <ClInclude Include="OmronCamera.h" />
     <ClInclude Include="OmronCameraObject.h" />
     <ClInclude Include="OmronCameraManager.h" />
   </ItemGroup>

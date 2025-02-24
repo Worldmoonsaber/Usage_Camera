@@ -1,11 +1,11 @@
 #pragma once
-#include <string>
-#include <iostream>
-#include<fstream>
+//#include <string>
+//#include <iostream>
+//#include<fstream>
 
 //dll\\PlayNitrideCameraComponet.lib
-#pragma comment(lib,"C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib")
-//C:\\Git\\Usage_Camera\\ArenaConsole\\x64\\Release\\PlayNitrideCameraComponet.lib
+#pragma comment(lib,"C:\\Git\\Usage_Camera_Workspace\\ArenaConsole\\x64\\Release\\dll\\PlayNitrideCameraComponet2.0.dll")
+
 using namespace std;
 
 namespace CameraManager

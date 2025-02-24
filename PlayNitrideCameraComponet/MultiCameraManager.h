@@ -50,8 +50,6 @@ namespace CameraManager
 
 	__declspec(dllexport)  void SetSimulationImageSource(string strSourceFile);
 
-
-
 	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, unsigned  int*& imgPtr);
 	__declspec(dllexport)  void Grab_byCameraNickName(string strCameraNickname, void*& imgPtr);
 	__declspec(dllexport)  void SetCameraParam_byCameraNickName(string strCameraNickname, string NodeName, string Value);
@@ -112,6 +110,9 @@ static bool isExistPath = false;
 /// <param name="message"></param>
 static void WriteLog(const std::string& message) {
 
+
+	cout << message << endl;
+
 	SYSTEMTIME st;
 	GetLocalTime(&st);
 
@@ -136,6 +137,7 @@ static void WriteLog(const std::string& message) {
 		}
 		else
 			isExistPath = true;
+
 	}
 
 	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件

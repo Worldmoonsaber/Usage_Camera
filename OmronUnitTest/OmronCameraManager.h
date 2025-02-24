@@ -24,3 +24,11 @@ public:
 };
 
 extern OmronCameraManager theOmronCameraList;
+
+
+namespace CameraManager
+{
+	extern "C" __declspec(dllexport)  vector< ICamera*> GetCamera();
+	extern "C" __declspec(dllexport)  void CloseCamera();
+	void WriteLog(const std::string& message);
+}

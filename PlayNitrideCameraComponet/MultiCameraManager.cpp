@@ -1,7 +1,6 @@
 #include "MultiCameraManager.h"
 #include "ICamera.h"
 #include <vector>
-#include "ArenaCameraObject.h"
 #include <cstring>
 #include <cstdlib>
 #include<opencv2/opencv.hpp>
@@ -14,18 +13,48 @@
 #include <stdio.h>  // printf
 #include <io.h> // strlen
 #include <chrono>
+#include <iostream>
+#include "DllResouceImporter.h"
 
 #pragma region 靜態物件
 static map<string, int> map_CameraName_Indx;
-static vector< ICamera*> lstCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
-#pragma region Arena相機 共用物件
-static Arena::ISystem* _System; //同時只能存在一個必須放在外面 令其為static
-static bool _isArenaSystemOpened=false;
-
-#pragma endregion
+static vector< ICamera*> lstAllCamera; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
+static vector <HMODULE> lstDynamicDllResource;
 
 static string _StrSimulationFile;
 static cv::Mat _ImgSimulation;
+
+
+vector<wstring> vGetDLLPath()
+{
+
+	vector<wstring> vStr;
+
+	std::ifstream file("dll\\CameraDll.txt"); // 開啟檔案
+	if (!file) {
+		std::cerr << "無法開啟檔案！" << std::endl;
+		return vStr;
+	}
+
+	std::string line;
+	while (std::getline(file, line)) 
+	{ // 逐行讀取
+		if (line.find("CameraLib") != std::string::npos)
+		{
+			cout << "Dectect CameraLib :"+line << endl;
+
+			std::wstring wsName(line.begin(), line.end());
+
+			wstring wstr = L"dll\\" + wsName;
+
+			vStr.push_back(wstr);
+		}
+	}
+
+	file.close(); // 關閉檔案
+
+	return vStr;
+}
 
 
 void _returnSimulationImg(void*& imgptr)
@@ -60,78 +89,64 @@ void _returnSimulationImg(void*& imgptr)
 
 void CameraManager::InitializeAllCamera()
 {
-	if (lstCamera.size() != 0)
+	cout << "InitializeAllCamera " << endl;
+
+	if (lstAllCamera.size() != 0)
 		return;
 
-#pragma region 初始化 Arena相機
-	try
+	vector<wstring> vWStrPath= vGetDLLPath();
+
+	for (int i = 0; i < vWStrPath.size(); i++)
 	{
+		std::string strTitle(vWStrPath[i].begin(), vWStrPath[i].end());
 
-		if (!_isArenaSystemOpened)
+		WriteLog("開始載入 "+ strTitle);
+		HMODULE hDLL = LoadLibrary((LPCWSTR)vWStrPath[i].c_str());// (LPCWSTR)vDllPath[0].c_str());
+
+		if (hDLL != NULL)
 		{
-			_System = Arena::OpenSystem();
-			_isArenaSystemOpened = true;
+			lstDynamicDllResource.push_back(hDLL);
+			vector< ICamera*> vObj = DllResourceImporter::GetCameraFromDll(hDLL);
+
+			for (int j = 0; j < vObj.size(); j++)
+				lstAllCamera.push_back(vObj[j]);
+
+			WriteLog("載入成功 " + strTitle);
 		}
-
-		_System->UpdateDevices(100);
-
-		std::vector<Arena::DeviceInfo> _deviceInfos = _System->GetDevices();
-
-		for (int u = 0; u < _deviceInfos.size(); u++)
+		else
 		{
-			ArenaCameraObject* ACO = new ArenaCameraObject(_System, _deviceInfos[u]);
-
-			lstCamera.push_back(ACO);
-
-			map_CameraName_Indx.insert(pair<string, int>(ACO->CameraName(), lstCamera.size() - 1));
+			WriteLog("載入失敗 " + strTitle);
+			continue;
 		}
 	}
-	catch (exception ex)
-	{
-		WriteLog(ex.what());
-	}
 
-#pragma endregion
+	cout << "InitializeFinished " << endl;
 
 }
 
 int CameraManager::CameraCount()
 {
-	return lstCamera.size();
+	return (int)lstAllCamera.size();
 }
 
 void CameraManager::CloseAllCamera()
 {
-
-#pragma region 關閉 Arena相機
-
-	for (int i = 0; i < lstCamera.size(); i++)
-		lstCamera[i]->Close();
-
-	//if (_isArenaSystemOpened)
-	//{
-	try
+	for (int i = 0; i < lstDynamicDllResource.size(); i++)
 	{
-		_isArenaSystemOpened = false;
-		Arena::CloseSystem(_System);
+		DllResourceImporter::CloseDllCamera(lstDynamicDllResource[i]);
 	}
-	catch (exception ex)
-	{
-		WriteLog(ex.what());
 
-	}
-	//}
-#pragma endregion 關閉 Arena相機
+	for (int i = 0; i < lstAllCamera.size(); i++)
+		lstAllCamera[i]->Close();
 
-	lstCamera.clear();
-
+	lstDynamicDllResource.clear();
+	lstAllCamera.clear();
 	WriteLog("All Camera Closed");
-
 }
 
 void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		_returnSimulationImg((void*&)imgPtr);
@@ -140,12 +155,12 @@ void CameraManager::Grab(int cameraId, unsigned int*& imgPtr)
 	}
 
 
-	lstCamera[cameraId]->Grab((void*&)imgPtr);
+	lstAllCamera[cameraId]->Grab((void*&)imgPtr);
 }
 
 void CameraManager::Grab(int cameraId, void*& imgPtr)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index "+to_string(cameraId)+" Not Exist");
 
@@ -154,14 +169,13 @@ void CameraManager::Grab(int cameraId, void*& imgPtr)
 		return;
 	}
 
-	lstCamera[cameraId]->Grab(imgPtr);
+	lstAllCamera[cameraId]->Grab(imgPtr);
 }
-
 
 void CameraManager::GetAllCameraNames(string strCameraNameArray[])
 {
-	for (int i = 0; i < lstCamera.size(); i++)
-		strCameraNameArray[i] = lstCamera[i]->CameraName();
+	for (int i = 0; i < lstAllCamera.size(); i++)
+		strCameraNameArray[i] = lstAllCamera[i]->CameraName();
 }
 
 void CameraManager::GetAllLog(string strLog[])
@@ -171,13 +185,13 @@ void CameraManager::GetAllLog(string strLog[])
 
 void CameraManager::GetCameraName(int cameraId,string& strCameraNameArray)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	strCameraNameArray = lstCamera[cameraId]->CameraName();
+	strCameraNameArray = lstAllCamera[cameraId]->CameraName();
 
 
 }
@@ -187,26 +201,26 @@ void CameraManager::SetCameraParam(int cameraId, string NodeName, string Value)
 {
 	WriteLog("SetCameraParam: " + to_string(cameraId) + ":" + NodeName+":"+ Value);
 
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->SetCameraParam(NodeName,Value);
+	lstAllCamera[cameraId]->SetCameraParam(NodeName,Value);
 
 }
 
 void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 {
 
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->GetCameraParam(NodeName, Value);
+	lstAllCamera[cameraId]->GetCameraParam(NodeName, Value);
 
 //	WriteLog("GetCameraParam: " + to_string(cameraId) + ":" + NodeName + ":" + Value);
 
@@ -214,7 +228,7 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName, string& Value)
 
 void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value[])
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
@@ -225,7 +239,7 @@ void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value
 
 	for (int i = 0; i < NodeName->size(); i++)
 	{
-		lstCamera[cameraId]->SetCameraParam(NodeName[i], Value[i]);
+		lstAllCamera[cameraId]->SetCameraParam(NodeName[i], Value[i]);
 		cout << "NodeName:" << NodeName[i] << " Value:"<< Value[i] << endl;
 
 	}
@@ -233,7 +247,7 @@ void CameraManager::SetCameraParam(int cameraId, string NodeName[], string Value
 
 void CameraManager::GetCameraParam(int cameraId, string NodeName[], string Value[])
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
@@ -243,41 +257,41 @@ void CameraManager::GetCameraParam(int cameraId, string NodeName[], string Value
 		return;
 
 	for (int i = 0; i < NodeName->size(); i++)
-		lstCamera[cameraId]->GetCameraParam(NodeName[i], Value[i]);
+		lstAllCamera[cameraId]->GetCameraParam(NodeName[i], Value[i]);
 
 }
 
 void CameraManager::AcquisitionStart(int cameraId)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->AcquisitionStart();
+	lstAllCamera[cameraId]->AcquisitionStart();
 }
 
 void CameraManager::AcquisitionStop(int cameraId)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->AcquisitionStop();
+	lstAllCamera[cameraId]->AcquisitionStop();
 }
 
 void CameraManager::ExcuteCmd(int cameraId, string Command)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->Excute(Command);
+	lstAllCamera[cameraId]->Excute(Command);
 }
 
 void CameraManager::FreeIntptrMemoryInt(unsigned int* imgPtr)
@@ -297,25 +311,25 @@ void CameraManager::FreeIntptrMemoryImage(void* imgPtr)
 
 void CameraManager::SaveCurrentCameraParam(int cameraId)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->Save();
+	lstAllCamera[cameraId]->Save();
 
 }
 
 void CameraManager::LoadSavedCameraParam(int cameraId)
 {
-	if (cameraId < 0 || cameraId >= lstCamera.size())
+	if (cameraId < 0 || cameraId >= lstAllCamera.size())
 	{
 		WriteLog("the Camera Index " + to_string(cameraId) + " Not Exist");
 		return;
 	}
 
-	lstCamera[cameraId]->Load();
+	lstAllCamera[cameraId]->Load();
 
 }
 
@@ -515,7 +529,7 @@ void CSharp_GetErrorLog(const char** array)
 
 const char* CSharp_GetCurrntVersion()
 {
-	string strVal = "1.0.0.3";
+	string strVal = "2.0.1.3";
 	char* res = (char*)malloc(strVal.size() + 1);
 	strcpy(res, strVal.c_str());
 
@@ -536,49 +550,3 @@ void CSharp_LoadDefaultParameter(int cameraId)
 
 #pragma endregion
 
-
-//bool isExistPath = false;
-//
-///// <summary>
-///// Debug時使用
-///// </summary>
-///// <param name="message"></param>
-//void WriteLog(const std::string& message) {
-//
-//	SYSTEMTIME st;
-//	GetLocalTime(&st);
-//
-//	if (!isExistPath)
-//	{
-//		string strPath;
-//		char* buffer;
-//
-//		// Get the current working directory:
-//		if ((buffer = _getcwd(NULL, 0)) != NULL)
-//		{
-//			strPath.assign(buffer, strlen(buffer));
-//			free(buffer);
-//		}
-//
-//		strPath = strPath + "\\Log\\";
-//
-//		if (_access(strPath.c_str(), 0) == -1)
-//		{
-//			_mkdir(strPath.c_str());
-//			isExistPath = true;
-//		}
-//		else
-//			isExistPath = true;
-//	}
-//
-//	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件
-//	if (logFile.is_open())
-//	{
-//		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) + ":" + to_string(st.wMilliseconds);
-//
-//		logFile << str << " " << message << std::endl; // 寫入日誌內容並換行
-//	}
-//	else {
-//		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
-//	}
-//}

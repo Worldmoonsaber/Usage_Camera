@@ -52,11 +52,15 @@ OmronCameraObject::OmronCameraObject(IStDeviceReleasable* obj)
 			_pIStDataStream.Reset(_pIStDevice->CreateIStDataStream(0));
 			std::cout << "pIStDevice->GetIStDeviceInfo()->GetDisplayName() " << _pIStDevice->GetIStDeviceInfo()->GetDisplayName() << endl;
 
-
 			Load();
 
 			std::cout << "Initial Finish " << endl;
 		}
+
+		string strVal = "Default_Value";
+		SetCameraParam("ExposureMode", "Timed");
+		GetCameraParam("ExposureMode", strVal);
+		WriteLog("Set Omron ExposureMode : " + strVal);
 
 	}
 	catch (const GenICam::GenericException& e)
@@ -89,6 +93,8 @@ void OmronCameraObject::Grab_Int(unsigned int*& imgPtr)
 
 		auto t_end = std::chrono::high_resolution_clock::now();
 		double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
+		WriteLog("Omron  Grab_Int(unsigned int*& imgPtr) 取像花費時間 : " + to_string(elapsed_time_ms) + " ms");
+		std::cout << "Omron  Grab_Int(unsigned int*& imgPtr) 取像花費時間 : " + to_string(elapsed_time_ms) + " ms" << endl;
 
 	}
 	catch (exception ex)
@@ -117,7 +123,9 @@ void OmronCameraObject::Grab(void*& imgPtr)
 		auto t_end = std::chrono::high_resolution_clock::now();
 		double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end - t_start).count();
 
-		cout << "取像花費時間: " << elapsed_time_ms << " ms" << endl;
+		WriteLog("Omron  Grab(void*& imgPtr) 取像花費時間 : " + to_string(elapsed_time_ms)+" ms");
+		std::cout << "Omron  Grab(void*& imgPtr) 取像花費時間 : " + to_string(elapsed_time_ms) + " ms" << endl;
+
 	}
 	catch (exception ex)
 	{
@@ -142,6 +150,8 @@ void OmronCameraObject::SetCameraParam(string NodeName, string Value)
 		SetInteger(NodeName.c_str(), Value.c_str());
 	else if (std::find(_ParamKey_ValueIsFloat.begin(), _ParamKey_ValueIsFloat.end(), NodeName) != _ParamKey_ValueIsFloat.end())
 		SetFloat(NodeName.c_str(), Value.c_str());
+	else if (std::find(_ParamKey_ValueIsBool.begin(), _ParamKey_ValueIsBool.end(), NodeName) != _ParamKey_ValueIsBool.end())
+		SetBool(NodeName.c_str(), Value.c_str());
 	else if (std::find(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName) != _ParamKey_SpecialKey.end())
 		SetSpecial(NodeName.c_str(), Value.c_str());
 
@@ -160,6 +170,8 @@ void OmronCameraObject::GetCameraParam(string NodeName, string& Value)
 		GetInteger(NodeName.c_str(), Value);
 	else if (std::find(_ParamKey_ValueIsFloat.begin(), _ParamKey_ValueIsFloat.end(), NodeName) != _ParamKey_ValueIsFloat.end())
 		GetFloat(NodeName.c_str(), Value);
+	else if (std::find(_ParamKey_ValueIsBool.begin(), _ParamKey_ValueIsBool.end(), NodeName) != _ParamKey_ValueIsBool.end())
+		GetBool(NodeName.c_str(), Value);
 	else if (std::find(_ParamKey_SpecialKey.begin(), _ParamKey_SpecialKey.end(), NodeName) != _ParamKey_SpecialKey.end())
 		GetSpecial(NodeName.c_str(), Value);
 }
@@ -196,12 +208,15 @@ bool OmronCameraObject::_containsSubstring(const std::string& mainStr, const std
 
 void OmronCameraObject::_AcquisitionStart()
 {
+	if (_IsAcquisitionRunning)
+		return;
+
 	_AcquisitionStop();
 
 	try
 	{
 
-		_pIStDataStream->StartAcquisition();
+		_pIStDataStream->StartAcquisition(_NumBuffer);
 		_IsAcquisitionRunning = true;
 
 		if (_pIStDevice->GetRemoteIStPort()->GetIStPortInfo()->IsAccessWrite())
@@ -385,7 +400,12 @@ void OmronCameraObject::SetSpecial(const char* szName, const char* szValueName)
 {
 	std::string strKey(szName);
 
-	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue","GainAll","Channels" };
+	//if(szName=="")
+
+	if (strKey == "GainAll")
+	{
+		SetFloat("Gain", szValueName);
+	}
 
 }
 
@@ -405,15 +425,53 @@ void OmronCameraObject::GetSpecial(const char* szName, string& strVal)
 		else
 		{
 			strVal = "3";
-
 		}
 	}
 	else if (strKey == "GainAll")
 	{
 		GetFloat("Gain", strVal);
-
 	}
+	else if (strKey == "GainRed")
+	{
+		strVal = "Not Support Parameter";
+	}
+	else if (strKey == "GainGreen")
+	{
+		strVal = "Not Support Parameter";
+	}
+	else if (strKey == "GainBlue")
+	{
+		strVal = "Not Support Parameter";
+	}
+}
 
+void OmronCameraObject::SetBool(const char* szBoolName, const char* szValueName)
+{
+	try
+	{
+		INodeMap* pINodeMap = _pIStDevice->GetRemoteIStPort()->GetINodeMap();
+		GenApi::CNodePtr pINode(pINodeMap->GetNode(szBoolName));
+		CBooleanPtr pBool(pINodeMap->GetNode(szBoolName));
+		bool dVal = str_to_bool(szValueName);
+		pBool->SetValue(dVal);
+	}
+	catch (const GenICam::GenericException& e)
+	{
+		cerr << endl << "SetBool Exception:" << endl << e.GetDescription() << endl;
+	}
+}
+
+void OmronCameraObject::GetBool(const char* szBoolName, string& strVal)
+{
+	INodeMap* pINodeMap = _pIStDevice->GetRemoteIStPort()->GetINodeMap();
+	GenApi::CNodePtr pINode(pINodeMap->GetNode(szBoolName));
+	CBooleanPtr pBool(pINodeMap->GetNode(szBoolName));
+	bool dVal = pBool->GetValue();
+
+	if(dVal)
+		strVal = "true";
+	else
+		strVal = "false";
 }
 
 void OmronCameraObject::mLoadSaveNodeMapSettingFile( bool isLoad)
@@ -471,6 +529,7 @@ void OmronCameraObject::mLoadSaveNodeMapSettingFile( bool isLoad)
 
 void OmronCameraObject::_GetImgPtr(void*& _imgPtr)
 {
+	delete _imgPtr;
 
 	while (_pIStDataStream->IsGrabbing())
 	{
@@ -478,16 +537,35 @@ void OmronCameraObject::_GetImgPtr(void*& _imgPtr)
 
 		if (pIStStreamBuffer->GetIStStreamBufferInfo()->IsImagePresent())
 		{
-			IStImage* pIStImage = pIStStreamBuffer->GetIStImage();
-			_imgPtr = (void*)pIStImage->GetImageBuffer();
+			try
+			{
+				IStImage* pIStImage = pIStStreamBuffer->GetIStImage();
+				_imgPtr = (void*)pIStImage->GetImageBuffer();
 
-			cout << "BlockId=" << pIStStreamBuffer->GetIStStreamBufferInfo()->GetFrameID()
-				<< " Size:" << pIStImage->GetImageWidth() << " x " << pIStImage->GetImageHeight()
-				<< " First byte =" << (uint32_t) * (uint8_t*)pIStImage->GetImageBuffer() << endl;
+				cout << "BlockId=" << pIStStreamBuffer->GetIStStreamBufferInfo()->GetFrameID()
+					<< " Size:" << pIStImage->GetImageWidth() << " x " << pIStImage->GetImageHeight()
+					<< " First byte =" << (uint32_t) * (uint8_t*)pIStImage->GetImageBuffer() << endl;
 
+				//size_t height = pIStImage->GetImageHeight();
+				//size_t width = pIStImage->GetImageWidth();
 
+				//string strVal;
+				//GetSpecial("Channels", strVal);
+				//int nChannels = atoi(strVal.c_str());
 
-			break;
+				////pIStImage->GetIStPixelComponentValue
+
+				//size_t bytes_per_pixel = 8;
+				//size_t image_data_size_bytes = width * height * bytes_per_pixel* nChannels;
+				//memcpy(_imgPtr, pIStImage->GetImageBuffer(), image_data_size_bytes);
+
+				break;
+			}
+			catch (exception ex)
+			{
+				//WriteLog("Omron  Grab(void*& imgPtr) ex : " + to_string(ex.what()));
+				std::cout << "Omron  Grab Exception" << endl;
+			}
 		}
 		else
 		{
@@ -513,6 +591,50 @@ void OmronCameraObject::_GetImgPtr(unsigned int*& _imgPtr)
 		{
 			cout << "Image data does not exist" << endl;
 		}
+	}
+}
+
+void OmronCameraObject::WriteLog(const std::string& message)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+
+	if (!_IsExistPath)
+	{
+		string strPath;
+		char* buffer;
+
+		// Get the current working directory:
+		if ((buffer = _getcwd(NULL, 0)) != NULL)
+		{
+			strPath.assign(buffer, strlen(buffer));
+			free(buffer);
+		}
+
+		strPath = strPath + "\\Log\\";
+
+		if (_access(strPath.c_str(), 0) == -1)
+		{
+			_mkdir(strPath.c_str());
+			_IsExistPath = true;
+		}
+		else
+			_IsExistPath = true;
+	}
+
+
+	std::ofstream logFile("Log\\camera_manager_log_" + to_string(st.wMonth) + "-" + to_string(st.wDay) + ".txt", std::ios::app); // 以追加模式打開文件
+
+	if (logFile.is_open())
+	{
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		string str = to_string(st.wMonth) + "-" + to_string(st.wDay) + " " + to_string(st.wHour) + ":" + to_string(st.wMinute) + ":" + to_string(st.wSecond) + ":" + to_string(st.wMilliseconds);
+		logFile << str << ":: Omron ::" << message << std::endl; // 寫入日誌內容並換行
+	}
+	else
+	{
+		std::cerr << "Unable to open log file." << std::endl; // 文件打開失敗時打印錯誤
 	}
 }
 

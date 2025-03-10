@@ -16,67 +16,6 @@
 using namespace StApi;
 using namespace std;
 
-//-----------------------------------------------------------------------------
-OmronCameraManager::OmronCameraManager()
-try :
-	// Before using the library, perform the initialization. 
-	m_objStApiAutoInit()
-{
-	InitInstance();
-
-	for (size_t i = 0; i < m_objIStSystemPtrList.GetSize(); ++i)
-	{
-		IStSystem* pIStSystem = m_objIStSystemPtrList[i];
-		for (size_t j = 0; j < pIStSystem->GetInterfaceCount(); ++j)
-		{
-			IStInterface* pIStInterface = pIStSystem->GetIStInterface(j);
-			IStDeviceReleasable* pDevice = pIStInterface->CreateFirstIStDevice();
-
-			if (pDevice->GetIStInterface())
-			{
-				OmronCameraObject* obj = new OmronCameraObject(pDevice);
-				vOmronCamera.push_back(obj);
-			}
-			break;
-		}
-	}
-
-}
-catch (const GenICam::GenericException& e)
-{
-	std::cout << "OmronCameraManager::GenericException : "<<e.what() << endl;
-}
-catch (const GenICam_3_2_Sentech::RuntimeException& e)
-{
-	std::cout << "OmronCameraManager::RuntimeException : " << e.what() << endl;
-}
-
-OmronCameraManager theOmronCameraList;
-
-bool OmronCameraManager::InitInstance()
-{
-
-	const uint32_t nCount = StSystemVendor_Count;
-	for (uint32_t i = StSystemVendor_Default; i < nCount; ++i)
-	{
-		EStSystemVendor_t eStSystemVendor = (EStSystemVendor_t)i;
-		try
-		{
-			m_objIStSystemPtrList.Register(CreateIStSystem(eStSystemVendor, StInterfaceType_All));
-		}
-		catch (const GenICam::GenericException& e)
-		{
-			if (eStSystemVendor == StSystemVendor_Default)
-			{
-				std::cout << "InitInstance::Exception : " << e.what() << endl;
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-
 bool isExistPath = false;
 
 void CameraManager::WriteLog(const std::string& message) {
@@ -123,27 +62,96 @@ void CameraManager::WriteLog(const std::string& message) {
 	}
 }
 
-
+StApi::CStApiAutoInit	_StApiAutoInit;
+StApi::CIStSystemPtrArray _StSystemPtrList;
 static vector< ICamera*> lstCameraOmronAll; //為了適應多種類相機的使用 必須為物件必須為指標 ,才能正常轉型成為各種相機,方便使用
 
+bool _IsInitialed = false;
+
+void CameraManager::GetDeviceFromStpApi()
+{
+	const uint32_t nCount = StSystemVendor_Count;
+	for (uint32_t i = StSystemVendor_Default; i < nCount; ++i)
+	{
+		EStSystemVendor_t eStSystemVendor = (EStSystemVendor_t)i;
+		try
+		{
+			_StSystemPtrList.Register(CreateIStSystem(eStSystemVendor, StInterfaceType_All));
+		}
+		catch (const GenICam::GenericException& e)
+		{
+			//if (eStSystemVendor == StSystemVendor_Default)
+			//{
+			std::cout << "Exception : " << e.what() << endl;
+
+			string strErr(e.GetDescription());
+			string str = "Exception : " + strErr;
+			WriteLog(str);
+
+		}
+	}
+
+	WriteLog("Omron Start Search Device...");
+
+
+	for (size_t i = 0; i < _StSystemPtrList.GetSize(); ++i)
+	{
+		IStSystem* pIStSystem = _StSystemPtrList[i];
+		for (size_t j = 0; j < pIStSystem->GetInterfaceCount(); ++j)
+		{
+			IStInterface* pIStInterface = pIStSystem->GetIStInterface(j);
+			IStDeviceReleasable* pDevice = pIStInterface->CreateFirstIStDevice();
+
+			if (pDevice->GetIStInterface())
+			{
+				OmronCameraObject* obj = new OmronCameraObject(pDevice);
+				WriteLog("Omron Found : " + obj->CameraName());
+				lstCameraOmronAll.push_back(obj);
+			}
+			break;
+		}
+	}
+}
 
 vector<ICamera*> CameraManager::GetCamera()
 {
-	try
+	__try
 	{
 
-		for (int i = 0; i < theOmronCameraList.vOmronCamera.size(); i++)
+		if (!_IsInitialed)
 		{
-			lstCameraOmronAll.push_back((ICamera*)theOmronCameraList.vOmronCamera[i]);
-		}
-		std::cout << "Initialize OmronCamera ... \n";
+			lstCameraOmronAll.clear();
+			WriteLog("StApiInitialize...");
 
-		WriteLog("Initialize OmronCamera ...");
+			StApiInitialize();
+
+			WriteLog("Omron Start Search Interface ...");
+
+
+			//----改成這樣的格式看看是否可以正常輸出
+			GetDeviceFromStpApi();
+
+			_IsInitialed = true;
+
+		}
+
+		vector<ICamera*> vCamera;
+
+		for (int i = 0; i < lstCameraOmronAll.size(); i++)
+			vCamera.push_back(lstCameraOmronAll[i]);
+
+		WriteLog("Omron vCamera.size = " + to_string(vCamera.size()));
+
+		std::cout << "OmronCamera Initial Success... \n";
+		WriteLog("OmronCamera Initial Success...");
+
+
+		return vCamera;
 
 	}
-	catch (exception ex)
+	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
-		WriteLog(ex.what());
+		WriteLog("StpApi Initial Fail.");
 	}
 
 	return lstCameraOmronAll;

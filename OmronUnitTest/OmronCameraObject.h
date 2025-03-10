@@ -40,12 +40,14 @@ public:
 	void Load();
 
 private:
+	int _NumBuffer = 20;
 	bool _containsSubstring(const std::string& mainStr, const std::string& subStr);
 
 	void _AcquisitionStart();
 	void _AcquisitionStop();
 	bool _IsDeviceLost;
 	bool _IsAcquisitionRunning;
+	bool _IsExistPath = false;
 	void OnDeviceLost(GenApi::INode* pINode, void*);
 
 	void Execute(INodeMap* pINodeMap, const char* szCommandName); 
@@ -59,9 +61,18 @@ private:
 	void SetFloat(const char* szFloatName, const char* szValueName);
 	void GetFloat(const char* szFloatName, string& strVal);
 
-
 	void SetSpecial(const char* szName, const char* szValueName);
 	void GetSpecial(const char* szName, string& strVal);
+
+	void SetBool(const char* szBoolName, const char* szValueName);
+	void GetBool(const char* szBoolName, string& strVal);
+
+	bool str_to_bool(std::string str) 
+	{
+		std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+		std::istringstream is(str);bool b;is >> std::boolalpha >> b;
+		return b;
+	}
 
 
 	CIStDevicePtr _pIStDevice;
@@ -75,13 +86,23 @@ private:
 	GenICam::gcstring _strDeviceID;
 	void _GetImgPtr(void*& _imgPtr);
 	void _GetImgPtr(unsigned int*& _imgPtr);
+	void WriteLog(const std::string& message);
 
 #pragma region 癸莱ARENA ㄏノよΑ
-	std::vector<string> _ParamKey_ValueIsEnum{ "PixelFormat"};// ち传家Α┮ ぃ惠璶痙
+	std::vector<string> _ParamKey_ValueIsEnum{ "PixelFormat","ExposureTimeSelector","ExposureMode","RegionSelector","RegionMode",
+		"ComponentSelector","MultiROIsInMultiPayloads","AcquisitionMode","TriggerSelector","TriggerMode",
+		"TriggerSource","GainSelector","GainAuto","UserSetSelector","UserSetDefault","ZoomMode","StretchMode","BackgroundStyle",
+		"AveragingArea","ThresholdTargetSelector","ThresholdRatio","ThresholdValue"};// ち传家Α┮ ぃ惠璶痙
 
-	std::vector<string> _ParamKey_ValueIsInt{ "Width","WidthMax","Height","HeightMax","AutoLightTarget" };// ち传家Α┮ ぃ惠璶痙
+	std::vector<string> _ParamKey_ValueIsInt{ "Width","WidthMax","Height","HeightMax","AutoLightTarget","StreamSelector",
+		"OffsetX","OffsetY","AcquisitionBurstFrameCount","RefreshInterval","ScrollHPosition","ScrollVPosition",
+		"MaximumPixelCountToDetect","PeripheralAreaSize"};// ち传家Α┮ ぃ惠璶痙
 
-	std::vector<string> _ParamKey_ValueIsFloat{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","Gain","BlackLevel","Gamma" };
+	std::vector<string> _ParamKey_ValueIsFloat{ "ExposureTime","AcquisitionFrameRate","TriggerDelay","Gain","BlackLevel","Gamma","LinePeriod","GainAutoLimitMax","GainAutoLimitMin","FixedZoomMagnification" };
+
+	std::vector<string> _ParamKey_ValueIsBool{ "ComponentEnable"};
+
+	std::vector<string> _ParamKey_ValueIsCmd{ "AcquisitionStart","AcquisitionStop","TriggerSoftware","UserSetLoad","UserSetSave"};
 
 	std::vector<string> _ParamKey_SpecialKey{ "GainRed","GainGreen","GainBlue","GainAll","Channels" };
 
@@ -89,3 +110,48 @@ private:
 
 
 };
+
+
+
+
+//"StreamSelector","OffsetX","OffsetY","AcquisitionBurstFrameCount","RefreshInterval","ScrollHPosition","ScrollVPosition","MaximumPixelCountToDetect","PeripheralAreaSize"
+
+
+/*
+Int
+
+Enum
+	RegionSelector
+	RegionMode
+	ComponentSelector
+	MultiROIsInMultiPayloads
+	AcquisitionMode
+	TriggerSelector
+	TriggerMode
+	TriggerSource
+	GainSelector
+	GainAuto
+	UserSetSelector
+	UserSetDefault
+	ZoomMode
+	StretchMode
+	BackgroundStyle
+	AveragingArea
+	ThresholdTargetSelector
+	ThresholdRatio
+	ThresholdValue
+Float
+	LinePeriod
+	GainAutoLimitMax
+	GainAutoLimitMin
+	FixedZoomMagnification
+bool
+	ComponentEnable
+
+cmd
+	AcquisitionStart
+	AcquisitionStop
+	TriggerSoftware
+	UserSetLoad
+	UserSetSave
+*/

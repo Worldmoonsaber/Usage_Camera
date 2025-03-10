@@ -633,9 +633,18 @@ void ArenaCameraObject::_LoadConfig()
 
 			if (vStr.size() >= 2)
 			{
-				_CreateMap(vStr[0], vStr[1]);
-				SetCameraParam(vStr[0], vStr[1]);
-				_vStringPm.push_back(tuple<string, string>(vStr[0], vStr[1]));
+				try
+				{
+					SetCameraParam(vStr[0], vStr[1]);
+					_CreateMap(vStr[0], vStr[1]);
+					_vStringPm.push_back(tuple<string, string>(vStr[0], vStr[1]));
+				}
+				catch (exception ex)
+				{
+					cout << ex.what() << endl;
+					std::string strGe(ex.what());
+					WriteLog(strGe);
+				}
 			}
 		}
 		ifs.close();

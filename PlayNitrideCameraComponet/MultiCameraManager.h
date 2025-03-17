@@ -94,6 +94,31 @@ extern "C" __declspec(dllexport)  void CSharp_SaveCurrentParameter(int cameraId)
 
 extern "C" __declspec(dllexport)  void CSharp_LoadDefaultParameter(int cameraId);
 
+extern "C" __declspec(dllexport)  int CSharp_CameraCount();
+
+extern "C" __declspec(dllexport)  const char* CSharp_GetCameraName(int cameraId);
+
+
+/*
+int CSharp_CameraCount()
+{
+	return CameraManager::CameraCount();
+}
+
+const char* CSharp_GetCameraName(int cameraId)
+{
+	string strVal = "";
+	CameraManager::GetCameraName(cameraId,strVal);
+
+	cout << "CameraName:" << strVal << endl;
+
+	char* res = (char*)malloc(strVal.size() + 1);
+	strcpy(res, strVal.c_str());
+
+	return res;
+}
+
+*/
 
 #pragma endregion
 

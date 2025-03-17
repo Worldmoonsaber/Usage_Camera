@@ -78,10 +78,12 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 	int Channels = atoi(strVal.c_str());
 
 
-	void* ptr = (void*)malloc(_Width * _Height * Channels * 8); //必須先提供記憶大小
+	void* ptr = (void*)malloc(_Width * _Height * 4 * 8); //必須先提供記憶大小
 	
 	
 	CameraManager::Grab(cameraId, ptr);
+	CameraManager::GetCameraParam(0, "PixelFormat", strVal);
+
 	int cvType = CV_8UC1;
 
 	if(Channels==3)
@@ -92,8 +94,6 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 	cv::Mat img(_Width, _Height, cvType, ptr);
 	cv::Mat image_output(_Width, _Height, CV_8UC4, &imgPtr[0]);
 
-	CameraManager::GetCameraParam(0, "PixelFormat", strVal);
-
 	int cvCvtType = cv::ColorConversionCodes::COLOR_GRAY2BGRA;
 
 	if (Channels == 3 && containsSubstring(strVal,"BGR"))
@@ -101,7 +101,9 @@ void CameraManager_Grab_Int(int cameraId, unsigned int* imgPtr)
 	else if (Channels == 3 && containsSubstring(strVal, "RGB"))
 		cvCvtType = cv::ColorConversionCodes::COLOR_RGB2RGBA;
 	else if (Channels == 1 && containsSubstring(strVal, "BayerRG"))
+	{
 		cvCvtType = cv::ColorConversionCodes::COLOR_BayerRG2BGRA;
+	}
 
 	if (Channels != 4)
 		cv::cvtColor(img, image_output, cvCvtType);

@@ -96,20 +96,30 @@ void CameraManager::InitializeAllCamera()
 
 	vector<wstring> vWStrPath= vGetDLLPath();
 
+	WriteLog("vWStrPath.size()  " + to_string(vWStrPath.size()));
+
+
 	for (int i = 0; i < vWStrPath.size(); i++)
 	{
 		std::string strTitle(vWStrPath[i].begin(), vWStrPath[i].end());
 
 		WriteLog("開始載入 "+ strTitle);
-		HMODULE hDLL = LoadLibrary((LPCWSTR)vWStrPath[i].c_str());// (LPCWSTR)vDllPath[0].c_str());
+		HMODULE hDLL = LoadLibrary((LPCWSTR)vWStrPath[i].c_str());
+
+		WriteLog("取得資源 " + strTitle);
 
 		if (hDLL != NULL)
 		{
+			WriteLog("資源獲取成功 " + strTitle);
+
 			lstDynamicDllResource.push_back(hDLL);
 			vector< ICamera*> vObj = DllResourceImporter::GetCameraFromDll(hDLL);
 
 			for (int j = 0; j < vObj.size(); j++)
+			{
+				WriteLog("取得相機  " + vObj[j]->CameraName());
 				lstAllCamera.push_back(vObj[j]);
+			}
 
 			WriteLog("載入成功 " + strTitle);
 		}
@@ -175,7 +185,9 @@ void CameraManager::Grab(int cameraId, void*& imgPtr)
 void CameraManager::GetAllCameraNames(string strCameraNameArray[])
 {
 	for (int i = 0; i < lstAllCamera.size(); i++)
+	{
 		strCameraNameArray[i] = lstAllCamera[i]->CameraName();
+	}
 }
 
 void CameraManager::GetAllLog(string strLog[])
@@ -432,28 +444,10 @@ void* CSharp_Grab(int cameraId)
 		
 	CameraManager::Grab(cameraId, ptr);
 
-	//if (channels == 1)
-	//{
-	//	uint8_t* data = new uint8_t[Width * Height * 4];
+	//---- ptr 轉成Bitmap時出現問題
 
-	//	int count = 0;
-	//	byte* bArr = (byte*)ptr;
-	//	for (int j = 0; j < Height; j++)
-	//		for (int i = 0; i < Width; i++)
-	//		{
-	//			data[count * 4] = bArr[count];     // B
-	//			data[count * 4 + 1] = bArr[count];   // G
-	//			data[count * 4 + 2] = bArr[count];   // R
-	//			data[count * 4 + 3] = 0; // A
+	return ptr;// img.data;
 
-	//			count++;
-	//		}
-
-	//	CSharp_FreeIntptrMemory(ptr);
-	//	return bArr;
-	//}
-
-	return ptr;
 }
 
 void CSharp_ExcuteCmd(int cameraId, const char* Command)
@@ -498,9 +492,13 @@ void CSharp_GetAllCamera(const char** array)
 	{
 		if (strCameraNameArray[i] != "")
 		{
+			WriteLog("Get Camera name : " + strCameraNameArray[i]);
+
 			char* result = (char*)malloc(strCameraNameArray[i].size() + 1);
 			strcpy(result, strCameraNameArray[i].c_str());
-			array[i] = result;
+			array[i] = "TEST";
+			WriteLog("Get Camera name : " + strCameraNameArray[i]+"To Array Done");
+
 		}
 	}
 
@@ -546,7 +544,23 @@ void CSharp_LoadDefaultParameter(int cameraId)
 	CameraManager::LoadSavedCameraParam(cameraId);
 }
 
+int CSharp_CameraCount()
+{
+	return CameraManager::CameraCount();
+}
 
+const char* CSharp_GetCameraName(int cameraId)
+{
+	string strVal = "";
+	CameraManager::GetCameraName(cameraId,strVal);
+
+	cout << "CameraName:" << strVal << endl;
+
+	char* res = (char*)malloc(strVal.size() + 1);
+	strcpy(res, strVal.c_str());
+
+	return res;
+}
 
 #pragma endregion
 

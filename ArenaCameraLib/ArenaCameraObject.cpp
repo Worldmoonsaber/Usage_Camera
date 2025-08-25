@@ -24,6 +24,26 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 		_Device->StopStream();
 		//----如果已經 StartStream 再呼叫一次 相機會掛掉
 		//		StopStream 再呼叫一次只會出現例外
+
+	}
+	catch (exception ex)
+	{
+		cout << ex.what() << endl;
+		std::string strGe(ex.what());
+		WriteLog(strGe);
+	}
+	catch (GenICam::GenericException& ge)
+	{
+		cout << ge.what() << endl;
+		std::string strGe(ge.what());
+		WriteLog(strGe);
+	}
+
+	try
+	{
+      		_Device->InitializeEvents();
+
+
 	}
 	catch (exception ex)
 	{
@@ -46,6 +66,12 @@ ArenaCameraObject::ArenaCameraObject(Arena::ISystem* pSystem, Arena::DeviceInfo 
 	WriteLog(str);
 
 	_LoadConfig();
+
+	//--------初始化設定 用於防呆
+	SetCameraParam("ExposureAuto", "Off");
+	SetCameraParam("BalanceWhiteAuto", "Off");
+
+
 }
 
 ArenaCameraObject::~ArenaCameraObject()
@@ -402,12 +428,12 @@ void ArenaCameraObject::AcquisitionStart()
 		//SetCameraParam("PixelFormat", "BGR8");
 		SetCameraParam("AcquisitionMode", "Continuous");
 
-		Arena::SetNodeValue<bool>(_Device->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
-		Arena::SetNodeValue<bool>(_Device->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
+		//Arena::SetNodeValue<bool>(_Device->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
+		//Arena::SetNodeValue<bool>(_Device->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
 
 		SetCameraParam("AcquisitionStartMode", "Normal");
 
-		Arena::SetNodeValue<GenICam::gcstring>(_Device->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
+		//Arena::SetNodeValue<GenICam::gcstring>(_Device->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
 
 		SetCameraParam("TriggerSelector", "AcquisitionStart");
 		SetCameraParam("TriggerSource", "Software");

@@ -46,7 +46,6 @@ void ICamera::GetCameraParam(string NodeName, string& Value)
 		Value = to_string(_Height);
 	else if(NodeName=="Channels")
 		Value= to_string(_Channels);
-
 }
 
 void ICamera::AcquisitionStart()
@@ -62,7 +61,6 @@ void ICamera::AcquisitionStop()
 void ICamera::Excute(string strCmd)
 {
 	cout << "ICamera Excutr "+strCmd << endl;
-
 }
 
 
@@ -79,4 +77,10 @@ void ICamera::Save()
 
 void ICamera::Load()
 {
+}
+
+bool ICamera::IsConnected()
+{
+	cout << "Camera : " << _strName<<" IsConnected is not implement"<< endl;
+	return true;
 }

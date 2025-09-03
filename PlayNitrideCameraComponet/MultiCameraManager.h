@@ -63,6 +63,7 @@ namespace CameraManager
 
 	__declspec(dllexport)  void SaveCurrentCameraParam_byCameraNickName(string strCameraNickname);
 	__declspec(dllexport)  void LoadSavedCameraParam_byCameraNickName(string strCameraNickname);
+	__declspec(dllexport)  bool IsConnected(int cameraId);
 
 }
 
@@ -97,6 +98,9 @@ extern "C" __declspec(dllexport)  void CSharp_LoadDefaultParameter(int cameraId)
 extern "C" __declspec(dllexport)  int CSharp_CameraCount();
 
 extern "C" __declspec(dllexport)  const char* CSharp_GetCameraName(int cameraId);
+
+
+extern "C" __declspec(dllexport)  bool CSharp_IsConnected(int cameraId);
 
 
 /*

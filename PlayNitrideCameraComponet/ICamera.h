@@ -38,6 +38,7 @@ public:
 	virtual void Save();
 	virtual void Load();
 
+	virtual bool IsConnected();
 	//static void UpdateLog(string str);
 	//static vector<string> vStringLog;
 

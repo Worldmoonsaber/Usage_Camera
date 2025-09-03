@@ -28,7 +28,7 @@ public:
 
 	void Save();
 	void Load();
-
+	bool IsConnected();
 private:
 
 	bool _containsSubstring(const std::string& mainStr, const std::string& subStr);

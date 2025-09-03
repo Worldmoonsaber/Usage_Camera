@@ -414,6 +414,11 @@ void CameraManager::LoadSavedCameraParam_byCameraNickName(string strCameraNickna
 	CameraManager::LoadSavedCameraParam(map_CameraName_Indx[strCameraNickname]);
 }
 
+bool CameraManager::IsConnected(int cameraId)
+{
+	return lstAllCamera[cameraId]->IsConnected();
+}
+
 
 #pragma region CSharp
 
@@ -527,7 +532,7 @@ void CSharp_GetErrorLog(const char** array)
 
 const char* CSharp_GetCurrntVersion()
 {
-	string strVal = "2.0.1.3";
+	string strVal = "2.0.1.4";
 	char* res = (char*)malloc(strVal.size() + 1);
 	strcpy(res, strVal.c_str());
 
@@ -560,6 +565,11 @@ const char* CSharp_GetCameraName(int cameraId)
 	strcpy(res, strVal.c_str());
 
 	return res;
+}
+
+bool CSharp_IsConnected(int cameraId)
+{
+	return CameraManager::IsConnected(cameraId);
 }
 
 #pragma endregion

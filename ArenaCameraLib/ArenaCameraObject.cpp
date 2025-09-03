@@ -464,6 +464,11 @@ void ArenaCameraObject::Load()
 	_LoadConfig();
 }
 
+bool ArenaCameraObject::IsConnected()
+{
+	return _Device->IsConnected();
+}
+
 bool ArenaCameraObject::_IsCurrentWriteSpecialNode(string NodeName, string Value)
 {
 	if (std::find(_ParamKey_ValueIsDouble.begin(), _ParamKey_ValueIsDouble.end(), NodeName) != _ParamKey_ValueIsDouble.end())
